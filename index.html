@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>費洛蒙共鳴｜ABO Cinematic Engine (PC版)</title>
+    <title>費洛蒙共鳴｜ABO Cinematic Engine (滿版PC體驗)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* ================= 預設深色主題變數 ================= */
         :root {
             --bg-color: #0a0a0c;
             --surface-color: #16161a;
@@ -13,13 +14,29 @@
             --text-secondary: #9e9e9e;
             --accent-color: #8a0303;
             --gold-accent: #c2a370;
+            --border-color: #333333;
+            --deck-header-bg: #111115;
             --font-main: 'GenWanMin', '源雲明體', 'Noto Serif TC', serif;
+            --bg-pattern: radial-gradient(rgba(138, 3, 3, 0.1) 1px, transparent 1px);
+        }
+
+        /* ================= 淺色主題變數 (動態切換) ================= */
+        body.light-mode {
+            --bg-color: #f7f7f8;
+            --surface-color: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #555555;
+            --accent-color: #a31515;
+            --gold-accent: #a67c40;
+            --border-color: #d1d1d1;
+            --deck-header-bg: #eaeaea;
+            --bg-pattern: radial-gradient(rgba(163, 21, 21, 0.08) 1px, transparent 1px);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background-color: #000;
+            background-color: var(--bg-color);
             color: var(--text-primary);
             font-family: var(--font-main);
             line-height: 2.2; 
@@ -28,23 +45,29 @@
             justify-content: center;
             height: 100vh; 
             overflow: hidden;
-            background-image: radial-gradient(rgba(138, 3, 3, 0.08) 1px, transparent 1px);
-            background-size: 30px 30px; /* 電腦版放大背景網格 */
+            background-image: var(--bg-pattern);
+            background-size: 30px 30px;
+            transition: background-color 0.5s, color 0.5s;
         }
 
-        /* 電腦版主容器擴寬至 1200px */
+        /* 滿版容器 */
         #app {
-            width: 100%; max-width: 1200px; height: 100vh;
-            background-color: var(--bg-color); position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,1); display: flex;
+            width: 100vw; height: 100vh;
+            position: relative; display: flex;
             flex-direction: column; overflow: hidden;
-            border-left: 1px solid #1a1a1a; border-right: 1px solid #1a1a1a;
+        }
+
+        /* 閱讀區置中包裝器 (確保 1920 螢幕下文字不至於太寬) */
+        .read-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .screen {
             display: none; width: 100%; height: 100%;
             flex-direction: column; position: absolute;
-            top: 0; left: 0; background-color: var(--bg-color); z-index: 1;
+            top: 0; left: 0; background-color: transparent; z-index: 1;
         }
         .screen.active { display: flex; animation: fadeIn 1.2s ease forwards; z-index: 5; }
 
@@ -61,15 +84,17 @@
             0% { opacity: 0.2; transform: scale(0.8); box-shadow: 0 0 2px rgba(255,255,255,0.1); }
             100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px rgba(255,255,255,0.8); }
         }
-        .intro-text { color: var(--gold-accent); font-size: 18px; letter-spacing: 0.5em; z-index: 2; animation: pulseText 2s infinite alternate; }
+        .intro-text { color: var(--gold-accent); font-size: 20px; letter-spacing: 0.5em; z-index: 2; animation: pulseText 2s infinite alternate; text-shadow: 0 0 10px #000;}
         @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; text-shadow: 0 0 15px var(--gold-accent); } }
 
         /* ================= 裝飾花紋框 ================= */
         .ornate-box {
-            position: relative; border: 1px solid rgba(194, 163, 112, 0.3);
-            background: rgba(10, 10, 12, 0.8); backdrop-filter: blur(5px);
-            padding: 50px 40px; border-radius: 4px; box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+            position: relative; border: 1px solid rgba(194, 163, 112, 0.4);
+            background: var(--surface-color);
+            padding: 50px 40px; border-radius: 4px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             max-width: 600px; width: 100%; margin: 0 auto;
+            transition: background-color 0.5s;
         }
         .ornate-box::before, .ornate-box::after {
             content: ''; position: absolute; width: 40px; height: 40px; border-color: var(--gold-accent); border-style: solid;
@@ -77,37 +102,37 @@
         .ornate-box::before { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
         .ornate-box::after { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
 
-        /* ================= 導覽列 (PC版加大 Padding) ================= */
+        /* ================= 導覽列 ================= */
         .nav-bar {
-            width: 100%; padding: 20px 40px; background: rgba(10, 10, 12, 0.95);
-            border-bottom: 1px solid rgba(194, 163, 112, 0.2); display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 20;
+            width: 100%; padding: 15px 40px; background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .back-btn, .action-text-btn {
+        .nav-left, .nav-center, .nav-right { display: flex; align-items: center; gap: 15px; }
+        
+        .action-text-btn {
             background: none; border: none; color: var(--text-secondary);
-            font-family: var(--font-main); font-size: 16px; cursor: pointer; transition: color 0.3s;
-            display: flex; align-items: center; gap: 8px;
+            font-family: var(--font-main); font-size: 15px; cursor: pointer; transition: color 0.3s;
         }
-        .back-btn:hover, .action-text-btn:hover { color: var(--gold-accent); }
+        .action-text-btn:hover { color: var(--gold-accent); }
         
         .nav-tab-btn {
             background: none; border: 1px solid var(--text-secondary); color: var(--text-secondary);
             padding: 6px 15px; border-radius: 4px; font-family: var(--font-main); font-size: 14px; cursor: pointer; transition: all 0.3s;
-            margin: 0 5px;
         }
-        .nav-tab-btn.active { border-color: var(--gold-accent); color: var(--gold-accent); }
+        .nav-tab-btn.active { border-color: var(--gold-accent); color: var(--gold-accent); font-weight: 600;}
 
-        /* ================= 內容區塊 (置中寬度) ================= */
-        .content-area { flex: 1; overflow-y: auto; padding: 40px 15%; }
+        /* ================= 表單元件 ================= */
+        .content-area { flex: 1; overflow-y: auto; padding: 40px 20px; }
         h1 { color: var(--gold-accent); font-weight: 300; font-size: 36px; text-align: center; margin-bottom: 10px; letter-spacing: 0.15em; }
         .subtitle { text-align: center; color: var(--accent-color); font-size: 14px; margin-bottom: 50px; letter-spacing: 0.2em; }
-        h2 { color: var(--accent-color); font-size: 22px; margin-bottom: 25px; font-weight: 600; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 40px;}
+        h2 { color: var(--accent-color); font-size: 22px; margin-bottom: 25px; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-top: 40px;}
         
         .form-group { margin-bottom: 25px; text-align: left; }
         .required-mark { color: var(--accent-color); margin-left: 8px; font-size: 13px; }
         label { display: block; color: var(--text-secondary); font-size: 15px; margin-bottom: 8px; }
         input, select, textarea {
-            width: 100%; padding: 15px; background: var(--surface-color); border: 1px solid #333;
+            width: 100%; padding: 15px; background: var(--bg-color); border: 1px solid var(--border-color);
             color: var(--text-primary); font-family: var(--font-main); outline: none; border-radius: 4px; transition: border-color 0.3s; font-size: 16px;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--accent-color); }
@@ -117,23 +142,23 @@
             border: none; border-radius: 4px; font-family: var(--font-main); font-size: 18px;
             cursor: pointer; letter-spacing: 0.1em; transition: all 0.3s; margin-top: 15px;
         }
-        .btn:hover { background: #a00; box-shadow: 0 0 20px rgba(138,3,3,0.6); }
+        .btn:hover { opacity: 0.8; box-shadow: 0 0 15px rgba(163, 21, 21, 0.5); }
         .btn-outline { background: transparent; border: 1px solid var(--text-secondary); color: var(--text-secondary); }
         .btn-outline:hover { border-color: var(--gold-accent); color: var(--gold-accent); }
 
         /* ================= 彈窗設定 (Modal) ================= */
         .modal-overlay {
-            display: none; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.85);
+            display: none; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7);
             z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);
         }
         .modal-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
         .modal-content { width: 100%; max-width: 600px; }
         .close-btn { position: absolute; top: 20px; right: 25px; background: none; border: none; color: var(--text-secondary); font-size: 28px; cursor: pointer; transition: color 0.3s; z-index: 10; }
-        .close-btn:hover { color: #fff; }
+        .close-btn:hover { color: var(--accent-color); }
 
-        /* ================= 存檔清單樣式 ================= */
+        /* ================= 存檔清單 ================= */
         .save-item {
-            background: rgba(22, 22, 26, 0.8); border: 1px solid #333; padding: 20px;
+            background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px;
             border-radius: 4px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
         }
         .save-item-info strong { color: var(--gold-accent); font-size: 18px; letter-spacing: 1px; }
@@ -141,51 +166,55 @@
 
         /* ================= 遊戲主畫面 (正文) ================= */
         #game-view { display: flex; flex-direction: column; height: 100%; position: relative; }
-        #story-container { flex: 1; overflow-y: auto; padding: 40px 15% 250px 15%; scroll-behavior: smooth; }
+        #story-container { flex: 1; overflow-y: auto; padding: 40px 20px 250px 20px; scroll-behavior: smooth; }
         .story-paragraph { 
             margin-bottom: 2em; opacity: 0; transform: translateY(10px); animation: slideUp 0.8s forwards; 
-            text-align: justify; font-size: 18px; /* 電腦版字體放大 */
+            text-align: justify; font-size: 18px; 
         }
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-        /* ================= 可折疊選項面板 ================= */
+        /* ================= 滿版可折疊選項面板 ================= */
         #action-deck {
-            position: absolute; bottom: 0; width: 100%; background: var(--bg-color);
-            border-top: 1px solid rgba(194, 163, 112, 0.3); display: flex; flex-direction: column;
-            box-shadow: 0 -15px 40px rgba(0,0,0,0.9); z-index: 50; transition: transform 0.3s ease;
+            position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface-color);
+            border-top: 1px solid var(--border-color); display: flex; flex-direction: column;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5); z-index: 50; transition: transform 0.3s ease;
         }
+        /* 保證收起時有可點擊的區域 */
         .action-deck-header {
-            padding: 15px 10px; text-align: center; color: var(--gold-accent); font-size: 14px;
-            cursor: pointer; background: rgba(10, 10, 12, 0.95); border-bottom: 1px solid #222; letter-spacing: 0.1em;
+            padding: 12px 10px; text-align: center; color: var(--gold-accent); font-size: 14px;
+            cursor: pointer; background: var(--deck-header-bg); letter-spacing: 0.1em;
+            font-weight: 600; border-bottom: 1px solid var(--border-color);
         }
+        .action-deck-header:hover { filter: brightness(1.2); }
         .action-deck-content {
-            padding: 25px 15%; display: flex; flex-direction: column; gap: 15px; /* PC版內縮排版 */
+            padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; 
             transition: max-height 0.3s ease, padding 0.3s ease; overflow: hidden; max-height: 500px; 
         }
         .action-deck-content.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; border-top: none; }
+        
         .choice-btn {
-            background: var(--surface-color); border: 1px solid #444; color: var(--text-primary);
+            background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
             padding: 16px 20px; text-align: left; border-radius: 4px; cursor: pointer; font-family: var(--font-main); transition: all 0.3s; font-size: 16px; line-height: 1.6;
         }
-        .choice-btn:hover { border-color: var(--gold-accent); background: #222; padding-left: 25px; } /* PC版懸浮特效 */
+        .choice-btn:hover { border-color: var(--gold-accent); padding-left: 25px; box-shadow: 0 0 10px rgba(194, 163, 112, 0.2);} 
         #custom-action-container { display: flex; gap: 15px; margin-top: 10px; }
         #custom-action-input { flex: 1; font-size: 16px; padding: 15px; }
-        #custom-action-btn { width: 120px; background: #333; color: var(--gold-accent); }
+        #custom-action-btn { width: 120px; background: var(--accent-color); color: #fff; margin-top:0;}
 
         /* ================= 狀態欄頁面 ================= */
         #status-view {
-            display: none; flex-direction: column; height: 100%; background: var(--bg-color);
-            padding: 40px 15% 100px 15%; overflow-y: auto; position: absolute; top: 70px; left: 0; right: 0; bottom: 0; z-index: 15;
+            display: none; flex-direction: column; height: 100%; background: transparent;
+            padding: 40px 20px 100px 20px; overflow-y: auto; position: absolute; top: 70px; left: 0; right: 0; bottom: 0; z-index: 15;
         }
         .status-card {
-            background: rgba(22, 22, 26, 0.95); border: 1px solid #333; border-left: 4px solid var(--accent-color);
+            background: var(--surface-color); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color);
             padding: 30px; font-size: 16px; color: var(--text-secondary); border-radius: 4px; margin-bottom: 25px; line-height: 2.0;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: fadeIn 0.5s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: fadeIn 0.5s ease;
         }
-        .status-card h3 { color: var(--text-primary); margin-bottom: 20px; font-weight: 400; letter-spacing: 0.1em; border-bottom: 1px solid #333; padding-bottom: 15px;}
+        .status-card h3 { color: var(--text-primary); margin-bottom: 20px; font-weight: 400; letter-spacing: 0.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;}
         .status-item { margin-bottom: 12px; display: flex; flex-direction: column;}
         .status-item span.label { color: var(--gold-accent); font-size: 13px; margin-bottom: 2px; }
-        .status-heart { color: var(--accent-color); font-style: italic; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #333; font-size: 18px;}
+        .status-heart { color: var(--accent-color); font-style: italic; margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-color); font-size: 18px;}
 
         /* ================= 演算中彈窗 ================= */
         #loading-modal {
@@ -193,7 +222,7 @@
             z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);
         }
         .loading-box {
-            background: rgba(22, 22, 26, 0.95); border: 1px solid var(--accent-color);
+            background: var(--surface-color); border: 1px solid var(--accent-color);
             padding: 40px 60px; border-radius: 8px; box-shadow: 0 0 30px rgba(138, 3, 3, 0.4);
             text-align: center; animation: pulseBg 1.5s infinite alternate;
         }
@@ -203,7 +232,7 @@
 </head>
 <body>
 
-<!-- 大廳環境音 (預設為Google官方暗黑科幻環境音，點擊後觸發) -->
+<!-- 大廳環境音 (Google 暗黑科幻環境音) -->
 <audio id="lobby-bgm" loop preload="auto">
     <source src="https://actions.google.com/sounds/v1/science_fiction/dark_ambient_drone.ogg" type="audio/ogg">
 </audio>
@@ -213,18 +242,26 @@
     <!-- 0. 銀河開場 -->
     <div id="intro-screen" class="screen active" onclick="enterLobby()">
         <div id="galaxy-container"></div>
-        <div class="intro-text">觸碰以進入實相</div>
+        <div class="intro-text">點擊螢幕以進入實相</div>
     </div>
 
     <!-- 1. 起始大廳 -->
     <div id="lobby-screen" class="screen">
+        <div class="nav-bar" style="position: absolute; top:0; background: transparent; border:none; box-shadow:none;">
+            <div class="nav-left">
+                <button class="action-text-btn" onclick="toggleTheme()" id="theme-toggle-btn">☀️ 淺色模式</button>
+            </div>
+            <div class="nav-right">
+                <button class="action-text-btn" onclick="toggleBGM()" id="bgm-toggle-btn">🎵 音樂：ON</button>
+            </div>
+        </div>
         <div class="content-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
             <div class="ornate-box">
                 <h1>費洛蒙共鳴</h1>
                 <div class="subtitle">ABO Cinematic Engine</div>
                 <button class="btn" onclick="checkApiAndProceed('new')">創立實相 (New Game)</button>
                 <button class="btn btn-outline" onclick="openLoadModal()">讀取實相 (Load Game)</button>
-                <button class="btn btn-outline" style="border-color: #333;" onclick="openApiModal()">神經網路設定</button>
+                <button class="btn btn-outline" style="border-color: var(--border-color);" onclick="openApiModal()">神經網路設定</button>
             </div>
         </div>
     </div>
@@ -233,7 +270,7 @@
     <div id="api-modal" class="modal-overlay">
         <div class="modal-content ornate-box">
             <button class="close-btn" onclick="closeApiModal()">×</button>
-            <h2 style="border:none;">神經網路設定</h2>
+            <h2 style="border:none; margin-top:0;">神經網路設定</h2>
             <div class="form-group">
                 <label>選擇 AI 引擎</label>
                 <select id="api-type">
@@ -254,7 +291,7 @@
     <div id="load-modal" class="modal-overlay">
         <div class="modal-content ornate-box" style="max-height: 80vh; display:flex; flex-direction:column;">
             <button class="close-btn" onclick="closeLoadModal()">×</button>
-            <h2 style="border:none;">實相記憶庫 (Saves)</h2>
+            <h2 style="border:none; margin-top:0;">實相記憶庫 (Saves)</h2>
             <div id="save-list" style="overflow-y:auto; flex:1; margin-top: 10px;">
                 <!-- 存檔清單生成區 -->
             </div>
@@ -264,10 +301,15 @@
     <!-- 2. 角色建構檔案 -->
     <div id="creation-screen" class="screen">
         <div class="nav-bar">
-            <button class="back-btn" onclick="switchScreen('lobby-screen')">← 返回大廳</button>
+            <div class="nav-left">
+                <button class="action-text-btn" onclick="switchScreen('lobby-screen')">← 返回大廳</button>
+            </div>
+            <div class="nav-right">
+                <button class="action-text-btn" onclick="toggleTheme()">☀️/🌙</button>
+            </div>
         </div>
         <div class="content-area">
-            <div style="max-width: 800px; margin: 0 auto;">
+            <div class="read-wrapper">
                 <h1>角色建構檔案</h1>
                 
                 <h2>【世界背景】</h2>
@@ -315,7 +357,6 @@
 
                 <h2>【生理特徵】</h2>
                 <div class="form-group" id="pheromone-group">
-                    <!-- 電腦版動態新增必填標籤 -->
                     <label>信息素味道<span id="pheromone-req-mark" class="required-mark" style="display:none;">(必填)</span></label>
                     <input type="text" id="c-pheromone" placeholder="例如：苦艾酒、白玫瑰、雨後森林...">
                 </div>
@@ -328,7 +369,7 @@
                 <div class="form-group"><label>特殊背景或隱疾</label><textarea id="c-background" rows="3" placeholder="例如：腺體受損、患有信息素依賴症..."></textarea></div>
                 
                 <button class="btn" onclick="initializeGame()">生成實相 (Start)</button>
-                <div style="height: 80px;"></div>
+                <div style="height: 100px;"></div>
             </div>
         </div>
     </div>
@@ -336,17 +377,24 @@
     <!-- 3. 遊戲主畫面 -->
     <div id="game-screen" class="screen">
         <div class="nav-bar">
-            <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存實相</button>
-            <div>
+            <div class="nav-left">
+                <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存實相</button>
+                <button class="action-text-btn" onclick="toggleTheme()">☀️/🌙</button>
+            </div>
+            <div class="nav-center">
                 <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">實相閱讀區</button>
                 <button class="nav-tab-btn" id="tab-status" onclick="toggleGameTab('status')">動態履歷</button>
             </div>
-            <button class="back-btn" onclick="exitGame()">離開 ➔</button>
+            <div class="nav-right">
+                <button class="action-text-btn" onclick="exitGame()">離開 ➔</button>
+            </div>
         </div>
         
         <!-- 正文 -->
         <div id="game-view">
-            <div id="story-container"></div>
+            <div id="story-container">
+                <div class="read-wrapper" id="story-inner-wrapper"></div>
+            </div>
             <!-- 演算中 -->
             <div id="loading-modal">
                 <div class="loading-box"><div class="loading-text">實相極致演算中...</div></div>
@@ -355,18 +403,20 @@
             <div id="action-deck" style="display: none;">
                 <div class="action-deck-header" onclick="toggleActionDeck()" id="action-deck-toggle">▼ 收起操作面板</div>
                 <div class="action-deck-content" id="action-deck-content">
-                    <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
-                    <div id="custom-action-container">
-                        <input type="text" id="custom-action-input" placeholder="點擊以輸入行動或專屬台詞...">
-                        <button class="btn" id="custom-action-btn" onclick="submitCustomAction()">送出</button>
+                    <div class="read-wrapper" style="padding-bottom:0;">
+                        <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        <div id="custom-action-container">
+                            <input type="text" id="custom-action-input" placeholder="點擊以輸入行動或專屬台詞...">
+                            <button class="btn" id="custom-action-btn" onclick="submitCustomAction()">送出</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 狀態欄 (無限累積) -->
+        <!-- 狀態欄 -->
         <div id="status-view">
-            <div style="max-width: 800px; margin: 0 auto; width: 100%;" id="status-card-wrapper">
+            <div class="read-wrapper" id="status-card-wrapper">
                 <!-- 歷史動態卡片將會附加於此 -->
             </div>
         </div>
@@ -374,7 +424,37 @@
 </div>
 
 <script>
-/* ================= UI 與特效邏輯 ================= */
+/* ================= 主題與音樂邏輯 ================= */
+let isLightMode = false;
+let isBgmPlaying = false;
+const bgm = document.getElementById('lobby-bgm');
+
+function toggleTheme() {
+    const body = document.body;
+    isLightMode = !isLightMode;
+    if(isLightMode) {
+        body.classList.add('light-mode');
+        document.getElementById('theme-toggle-btn').innerText = '🌙 深色模式';
+    } else {
+        body.classList.remove('light-mode');
+        document.getElementById('theme-toggle-btn').innerText = '☀️ 淺色模式';
+    }
+    localStorage.setItem('aboTheme', isLightMode ? 'light' : 'dark');
+}
+
+function toggleBGM() {
+    if(isBgmPlaying) {
+        bgm.pause();
+        isBgmPlaying = false;
+        document.getElementById('bgm-toggle-btn').innerText = '🎵 音樂：OFF';
+    } else {
+        bgm.volume = 0.5;
+        bgm.play().catch(e => console.log("播放被阻擋", e));
+        isBgmPlaying = true;
+        document.getElementById('bgm-toggle-btn').innerText = '🎵 音樂：ON';
+    }
+}
+
 function createGalaxy() {
     const container = document.getElementById('galaxy-container');
     for (let i = 0; i < 200; i++) {
@@ -389,14 +469,10 @@ function createGalaxy() {
     }
 }
 
-// 點擊銀河畫面後觸發大廳與音樂
+// 使用者點擊銀河後觸發 (解決自動播放限制)
 function enterLobby() { 
     switchScreen('lobby-screen'); 
-    
-    // 播放環境音樂
-    const bgm = document.getElementById('lobby-bgm');
-    bgm.volume = 0.6;
-    bgm.play().catch(e => console.log("瀏覽器自動播放限制，需等待互動:", e));
+    if(!isBgmPlaying) toggleBGM(); // 啟動音樂
 }
 
 function switchScreen(screenId) {
@@ -424,7 +500,7 @@ function handleGender2Change() {
         reqMark.style.display = 'none';
     } else {
         pheromoneGroup.style.display = 'block';
-        reqMark.style.display = 'inline'; // 顯示必填標籤
+        reqMark.style.display = 'inline'; 
     }
 }
 
@@ -493,7 +569,7 @@ const SYSTEM_PROMPT = `
 </Status_Bar>
 `;
 
-/* ================= 存檔系統 (Save/Load) ================= */
+/* ================= 存檔系統 ================= */
 function saveGameProgress() {
     if(chatHistory.length === 0) return alert("目前沒有可儲存的進度。");
     const saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
@@ -529,7 +605,7 @@ function renderSaveList() {
                 <div class="save-item-info"><strong>${s.name}</strong><small>${s.timestamp}</small></div>
                 <div style="display:flex; gap:10px;">
                     <button class="btn btn-outline" style="width:auto; padding:8px 15px; margin:0;" onclick="loadGame(${s.id})">讀取</button>
-                    <button class="btn btn-outline" style="width:auto; padding:8px 15px; margin:0; border-color:#8a0303; color:#8a0303" onclick="deleteSave(${s.id}, event)">刪除</button>
+                    <button class="btn btn-outline" style="width:auto; padding:8px 15px; margin:0; border-color:var(--accent-color); color:var(--accent-color)" onclick="deleteSave(${s.id}, event)">刪除</button>
                 </div>
             `;
             list.appendChild(div);
@@ -560,7 +636,7 @@ function loadGame(id) {
     closeLoadModal();
     switchScreen('game-screen');
     
-    document.getElementById('story-container').innerHTML = '';
+    document.getElementById('story-inner-wrapper').innerHTML = '';
     document.getElementById('status-card-wrapper').innerHTML = ''; 
     
     chatHistory.forEach((msg, index) => {
@@ -587,9 +663,18 @@ function checkApiAndProceed(action) {
     if(action === 'new') switchScreen('creation-screen');
 }
 
+function saveApiConfig() {
+    const type = document.getElementById('api-type').value;
+    const key = document.getElementById('api-key').value.trim();
+    if (!key) { alert("API Key 不能為空！"); return; }
+    apiConfig = { type, key };
+    localStorage.setItem('aboApiConfig', JSON.stringify(apiConfig));
+    alert("設定已儲存！"); closeApiModal();
+}
+
 function exitGame() {
     if(confirm("確定要離開當前實相嗎？未儲存的進度將會遺失。")) {
-        document.getElementById('story-container').innerHTML = '';
+        document.getElementById('story-inner-wrapper').innerHTML = '';
         document.getElementById('status-card-wrapper').innerHTML = '';
         document.getElementById('action-deck').style.display = 'none';
         chatHistory = []; currentSaveName = "";
@@ -612,15 +697,11 @@ function initializeGame() {
     const personality = document.getElementById('c-personality').value.trim();
     const bg = document.getElementById('c-background').value.trim() || "無特別背景";
 
-    // 基本必填檢查
     if(!era || !setting || !name || !age || !g1 || !g2 || !job || !personality) {
         alert("請完整填寫所有標註 (必填) 的欄位！"); return;
     }
-    // 信息素必填檢查 (如果不是 Beta 且 不是 未分化)
     if(g2 !== 'Beta' && g2 !== '未分化') {
-        if(!pheromone) {
-            alert("非 Beta / 未分化者，【信息素味道】為必填！"); return;
-        }
+        if(!pheromone) { alert("非 Beta / 未分化者，【信息素味道】為必填！"); return; }
     }
 
     characterProfile = `【玩家角色卡】
@@ -637,7 +718,7 @@ function initializeGame() {
 請根據此角色卡，創造一個極具張力、充滿感官細節的長篇開局場景，並嚴格輸出 XML。字數絕對不得低於 1500 字。`;
 
     currentSaveName = "";
-    document.getElementById('story-container').innerHTML = '';
+    document.getElementById('story-inner-wrapper').innerHTML = '';
     document.getElementById('status-card-wrapper').innerHTML = '';
     switchScreen('game-screen');
     sendToAI(characterProfile, true);
@@ -660,7 +741,9 @@ function submitCustomAction() {
 
 /* ================= 渲染邏輯 ================= */
 function appendLog(text, type) {
-    const container = document.getElementById('story-container');
+    const container = document.getElementById('story-inner-wrapper');
+    const scrollArea = document.getElementById('story-container');
+    
     if (type === 'user') {
         const div = document.createElement('div');
         div.className = 'story-paragraph';
@@ -676,8 +759,7 @@ function appendLog(text, type) {
             container.appendChild(pDiv);
         });
     }
-    // 平滑滾動
-    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 150);
+    setTimeout(() => { scrollArea.scrollTop = scrollArea.scrollHeight; }, 150);
 }
 
 function renderUIFromXML(xmlString, renderOptions = true) {
@@ -758,7 +840,6 @@ async function sendToAI(promptText, isInit = false) {
             if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
             else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
 
-            // 嚴格修正為官方穩定的 gemini-3.5-flash 模型，避免 404 報錯
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
@@ -789,6 +870,11 @@ async function sendToAI(promptText, isInit = false) {
 
 window.onload = () => {
     createGalaxy();
+    
+    // 讀取主題偏好
+    const savedTheme = localStorage.getItem('aboTheme');
+    if(savedTheme === 'light') toggleTheme();
+    
     const saved = localStorage.getItem('aboApiConfig');
     if (saved) {
         apiConfig = JSON.parse(saved);
