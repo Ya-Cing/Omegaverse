@@ -238,7 +238,7 @@
                 <label>選擇 AI 引擎</label>
                 <select id="api-type">
                     <!-- 修正為官方正式型號，確保不會404報錯 -->
-                    <option value="gemini">Google Gemini 1.5 Flash / Pro</option>
+                    <option value="gemini">Google Gemini 3.5 Flash / Pro</option>
                     <option value="openai">OpenAI GPT-4o</option>
                 </select>
             </div>
@@ -758,8 +758,8 @@ async function sendToAI(promptText, isInit = false) {
             if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
             else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
 
-            // 嚴格修正為官方穩定的 gemini-1.5-flash 模型，避免 404 報錯
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiConfig.key}`;
+            // 嚴格修正為官方穩定的 gemini-3.5-flash 模型，避免 404 報錯
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
