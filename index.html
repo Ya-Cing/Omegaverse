@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>費洛蒙共鳴｜ABO Cinematic Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>費洛蒙共鳴｜ABO Cinematic Engine (PC版)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,17 +26,19 @@
             letter-spacing: 0.05em;
             display: flex;
             justify-content: center;
-            height: 100dvh; 
+            height: 100vh; 
             overflow: hidden;
-            background-image: radial-gradient(rgba(138, 3, 3, 0.05) 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-image: radial-gradient(rgba(138, 3, 3, 0.08) 1px, transparent 1px);
+            background-size: 30px 30px; /* 電腦版放大背景網格 */
         }
 
+        /* 電腦版主容器擴寬至 1200px */
         #app {
-            width: 100%; max-width: 480px; height: 100dvh;
+            width: 100%; max-width: 1200px; height: 100vh;
             background-color: var(--bg-color); position: relative;
-            box-shadow: 0 0 30px rgba(0,0,0,1); display: flex;
+            box-shadow: 0 0 50px rgba(0,0,0,1); display: flex;
             flex-direction: column; overflow: hidden;
+            border-left: 1px solid #1a1a1a; border-right: 1px solid #1a1a1a;
         }
 
         .screen {
@@ -59,61 +61,63 @@
             0% { opacity: 0.2; transform: scale(0.8); box-shadow: 0 0 2px rgba(255,255,255,0.1); }
             100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px rgba(255,255,255,0.8); }
         }
-        .intro-text { color: var(--gold-accent); font-size: 14px; letter-spacing: 0.4em; z-index: 2; animation: pulseText 2s infinite alternate; }
-        @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; text-shadow: 0 0 10px var(--gold-accent); } }
+        .intro-text { color: var(--gold-accent); font-size: 18px; letter-spacing: 0.5em; z-index: 2; animation: pulseText 2s infinite alternate; }
+        @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; text-shadow: 0 0 15px var(--gold-accent); } }
 
-        /* ================= 裝飾花紋框 (大廳 & Modal) ================= */
+        /* ================= 裝飾花紋框 ================= */
         .ornate-box {
             position: relative; border: 1px solid rgba(194, 163, 112, 0.3);
             background: rgba(10, 10, 12, 0.8); backdrop-filter: blur(5px);
-            padding: 40px 20px; border-radius: 4px; box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            padding: 50px 40px; border-radius: 4px; box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+            max-width: 600px; width: 100%; margin: 0 auto;
         }
         .ornate-box::before, .ornate-box::after {
-            content: ''; position: absolute; width: 30px; height: 30px; border-color: var(--gold-accent); border-style: solid;
+            content: ''; position: absolute; width: 40px; height: 40px; border-color: var(--gold-accent); border-style: solid;
         }
         .ornate-box::before { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
         .ornate-box::after { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
 
-        /* ================= 導覽列 ================= */
+        /* ================= 導覽列 (PC版加大 Padding) ================= */
         .nav-bar {
-            width: 100%; padding: 15px 20px; background: rgba(10, 10, 12, 0.95);
+            width: 100%; padding: 20px 40px; background: rgba(10, 10, 12, 0.95);
             border-bottom: 1px solid rgba(194, 163, 112, 0.2); display: flex; align-items: center; justify-content: space-between;
             position: sticky; top: 0; z-index: 20;
         }
         .back-btn, .action-text-btn {
             background: none; border: none; color: var(--text-secondary);
-            font-family: var(--font-main); font-size: 14px; cursor: pointer; transition: color 0.3s;
-            display: flex; align-items: center; gap: 5px;
+            font-family: var(--font-main); font-size: 16px; cursor: pointer; transition: color 0.3s;
+            display: flex; align-items: center; gap: 8px;
         }
         .back-btn:hover, .action-text-btn:hover { color: var(--gold-accent); }
         
         .nav-tab-btn {
             background: none; border: 1px solid var(--text-secondary); color: var(--text-secondary);
-            padding: 4px 10px; border-radius: 4px; font-family: var(--font-main); font-size: 12px; cursor: pointer; transition: all 0.3s;
+            padding: 6px 15px; border-radius: 4px; font-family: var(--font-main); font-size: 14px; cursor: pointer; transition: all 0.3s;
+            margin: 0 5px;
         }
         .nav-tab-btn.active { border-color: var(--gold-accent); color: var(--gold-accent); }
 
-        /* ================= 內容區塊 ================= */
-        .content-area { flex: 1; overflow-y: auto; padding: 30px 20px; }
-        h1 { color: var(--gold-accent); font-weight: 300; font-size: 28px; text-align: center; margin-bottom: 5px; letter-spacing: 0.15em; }
-        .subtitle { text-align: center; color: var(--accent-color); font-size: 12px; margin-bottom: 40px; letter-spacing: 0.2em; }
-        h2 { color: var(--accent-color); font-size: 18px; margin-bottom: 20px; font-weight: 600; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        /* ================= 內容區塊 (置中寬度) ================= */
+        .content-area { flex: 1; overflow-y: auto; padding: 40px 15%; }
+        h1 { color: var(--gold-accent); font-weight: 300; font-size: 36px; text-align: center; margin-bottom: 10px; letter-spacing: 0.15em; }
+        .subtitle { text-align: center; color: var(--accent-color); font-size: 14px; margin-bottom: 50px; letter-spacing: 0.2em; }
+        h2 { color: var(--accent-color); font-size: 22px; margin-bottom: 25px; font-weight: 600; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 40px;}
         
-        .form-group { margin-bottom: 20px; text-align: left; }
-        .required-mark { color: var(--accent-color); margin-left: 5px; font-size: 12px; }
-        label { display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 5px; }
+        .form-group { margin-bottom: 25px; text-align: left; }
+        .required-mark { color: var(--accent-color); margin-left: 8px; font-size: 13px; }
+        label { display: block; color: var(--text-secondary); font-size: 15px; margin-bottom: 8px; }
         input, select, textarea {
-            width: 100%; padding: 12px; background: var(--surface-color); border: 1px solid #333;
-            color: var(--text-primary); font-family: var(--font-main); outline: none; border-radius: 4px; transition: border-color 0.3s; font-size: 15px;
+            width: 100%; padding: 15px; background: var(--surface-color); border: 1px solid #333;
+            color: var(--text-primary); font-family: var(--font-main); outline: none; border-radius: 4px; transition: border-color 0.3s; font-size: 16px;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--accent-color); }
         
         .btn {
-            width: 100%; padding: 15px; background: var(--accent-color); color: #fff;
-            border: none; border-radius: 4px; font-family: var(--font-main); font-size: 16px;
-            cursor: pointer; letter-spacing: 0.1em; transition: all 0.3s; margin-top: 10px;
+            width: 100%; padding: 18px; background: var(--accent-color); color: #fff;
+            border: none; border-radius: 4px; font-family: var(--font-main); font-size: 18px;
+            cursor: pointer; letter-spacing: 0.1em; transition: all 0.3s; margin-top: 15px;
         }
-        .btn:hover { background: #a00; box-shadow: 0 0 15px rgba(138,3,3,0.6); }
+        .btn:hover { background: #a00; box-shadow: 0 0 20px rgba(138,3,3,0.6); }
         .btn-outline { background: transparent; border: 1px solid var(--text-secondary); color: var(--text-secondary); }
         .btn-outline:hover { border-color: var(--gold-accent); color: var(--gold-accent); }
 
@@ -123,24 +127,24 @@
             z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);
         }
         .modal-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
-        .modal-content { width: 100%; max-width: 400px; }
-        .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; transition: color 0.3s; z-index: 10; }
+        .modal-content { width: 100%; max-width: 600px; }
+        .close-btn { position: absolute; top: 20px; right: 25px; background: none; border: none; color: var(--text-secondary); font-size: 28px; cursor: pointer; transition: color 0.3s; z-index: 10; }
         .close-btn:hover { color: #fff; }
 
         /* ================= 存檔清單樣式 ================= */
         .save-item {
-            background: rgba(22, 22, 26, 0.8); border: 1px solid #333; padding: 15px;
-            border-radius: 4px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(22, 22, 26, 0.8); border: 1px solid #333; padding: 20px;
+            border-radius: 4px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
         }
-        .save-item-info strong { color: var(--gold-accent); font-size: 15px; letter-spacing: 1px; }
-        .save-item-info small { color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px; }
+        .save-item-info strong { color: var(--gold-accent); font-size: 18px; letter-spacing: 1px; }
+        .save-item-info small { color: var(--text-secondary); font-size: 14px; display: block; margin-top: 5px; }
 
         /* ================= 遊戲主畫面 (正文) ================= */
         #game-view { display: flex; flex-direction: column; height: 100%; position: relative; }
-        #story-container { flex: 1; overflow-y: auto; padding: 20px 20px 200px 20px; scroll-behavior: smooth; }
+        #story-container { flex: 1; overflow-y: auto; padding: 40px 15% 250px 15%; scroll-behavior: smooth; }
         .story-paragraph { 
             margin-bottom: 2em; opacity: 0; transform: translateY(10px); animation: slideUp 0.8s forwards; 
-            text-align: justify; font-size: 16px; 
+            text-align: justify; font-size: 18px; /* 電腦版字體放大 */
         }
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
@@ -148,42 +152,40 @@
         #action-deck {
             position: absolute; bottom: 0; width: 100%; background: var(--bg-color);
             border-top: 1px solid rgba(194, 163, 112, 0.3); display: flex; flex-direction: column;
-            box-shadow: 0 -15px 30px rgba(0,0,0,0.9); z-index: 50; transition: transform 0.3s ease;
-            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -15px 40px rgba(0,0,0,0.9); z-index: 50; transition: transform 0.3s ease;
         }
         .action-deck-header {
-            padding: 18px 10px; text-align: center; color: var(--gold-accent); font-size: 14px;
+            padding: 15px 10px; text-align: center; color: var(--gold-accent); font-size: 14px;
             cursor: pointer; background: rgba(10, 10, 12, 0.95); border-bottom: 1px solid #222; letter-spacing: 0.1em;
         }
         .action-deck-content {
-            padding: 15px 20px; display: flex; flex-direction: column; gap: 10px;
-            transition: max-height 0.3s ease, padding 0.3s ease; overflow: hidden; max-height: 450px; 
+            padding: 25px 15%; display: flex; flex-direction: column; gap: 15px; /* PC版內縮排版 */
+            transition: max-height 0.3s ease, padding 0.3s ease; overflow: hidden; max-height: 500px; 
         }
         .action-deck-content.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; border-top: none; }
         .choice-btn {
             background: var(--surface-color); border: 1px solid #444; color: var(--text-primary);
-            padding: 14px 12px; text-align: left; border-radius: 4px; cursor: pointer; font-family: var(--font-main); transition: all 0.3s; font-size: 15px; line-height: 1.5;
+            padding: 16px 20px; text-align: left; border-radius: 4px; cursor: pointer; font-family: var(--font-main); transition: all 0.3s; font-size: 16px; line-height: 1.6;
         }
-        .choice-btn:hover { border-color: var(--gold-accent); background: #222; }
-        #custom-action-container { display: flex; gap: 10px; margin-top: 5px; }
-        #custom-action-input { flex: 1; font-size: 15px; }
-        #custom-action-btn { width: auto; background: #333; color: var(--gold-accent); }
+        .choice-btn:hover { border-color: var(--gold-accent); background: #222; padding-left: 25px; } /* PC版懸浮特效 */
+        #custom-action-container { display: flex; gap: 15px; margin-top: 10px; }
+        #custom-action-input { flex: 1; font-size: 16px; padding: 15px; }
+        #custom-action-btn { width: 120px; background: #333; color: var(--gold-accent); }
 
         /* ================= 狀態欄頁面 ================= */
         #status-view {
             display: none; flex-direction: column; height: 100%; background: var(--bg-color);
-            padding: 20px 20px 100px 20px; overflow-y: auto; position: absolute; top: 60px; left: 0; right: 0; bottom: 0; z-index: 15;
+            padding: 40px 15% 100px 15%; overflow-y: auto; position: absolute; top: 70px; left: 0; right: 0; bottom: 0; z-index: 15;
         }
         .status-card {
-            background: rgba(22, 22, 26, 0.95); border: 1px solid #333; border-left: 3px solid var(--accent-color);
-            padding: 20px; font-size: 15px; color: var(--text-secondary); border-radius: 4px; margin-bottom: 20px; line-height: 2.0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            animation: fadeIn 0.5s ease;
+            background: rgba(22, 22, 26, 0.95); border: 1px solid #333; border-left: 4px solid var(--accent-color);
+            padding: 30px; font-size: 16px; color: var(--text-secondary); border-radius: 4px; margin-bottom: 25px; line-height: 2.0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: fadeIn 0.5s ease;
         }
-        .status-card h3 { color: var(--text-primary); margin-bottom: 15px; font-weight: 400; letter-spacing: 0.1em; border-bottom: 1px solid #333; padding-bottom: 10px;}
-        .status-item { margin-bottom: 10px; display: flex; flex-direction: column;}
-        .status-item span.label { color: var(--gold-accent); font-size: 12px; margin-bottom: 2px; }
-        .status-heart { color: var(--accent-color); font-style: italic; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #333; font-size: 16px;}
+        .status-card h3 { color: var(--text-primary); margin-bottom: 20px; font-weight: 400; letter-spacing: 0.1em; border-bottom: 1px solid #333; padding-bottom: 15px;}
+        .status-item { margin-bottom: 12px; display: flex; flex-direction: column;}
+        .status-item span.label { color: var(--gold-accent); font-size: 13px; margin-bottom: 2px; }
+        .status-heart { color: var(--accent-color); font-style: italic; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #333; font-size: 18px;}
 
         /* ================= 演算中彈窗 ================= */
         #loading-modal {
@@ -192,14 +194,19 @@
         }
         .loading-box {
             background: rgba(22, 22, 26, 0.95); border: 1px solid var(--accent-color);
-            padding: 30px 40px; border-radius: 8px; box-shadow: 0 0 20px rgba(138, 3, 3, 0.4);
+            padding: 40px 60px; border-radius: 8px; box-shadow: 0 0 30px rgba(138, 3, 3, 0.4);
             text-align: center; animation: pulseBg 1.5s infinite alternate;
         }
-        .loading-text { color: var(--gold-accent); font-size: 15px; letter-spacing: 0.2em; font-family: var(--font-main); }
-        @keyframes pulseBg { 0% { box-shadow: 0 0 10px rgba(138, 3, 3, 0.2); } 100% { box-shadow: 0 0 25px rgba(138, 3, 3, 0.8); } }
+        .loading-text { color: var(--gold-accent); font-size: 18px; letter-spacing: 0.2em; font-family: var(--font-main); }
+        @keyframes pulseBg { 0% { box-shadow: 0 0 15px rgba(138, 3, 3, 0.2); } 100% { box-shadow: 0 0 35px rgba(138, 3, 3, 0.8); } }
     </style>
 </head>
 <body>
+
+<!-- 大廳環境音 (預設為Google官方暗黑科幻環境音，點擊後觸發) -->
+<audio id="lobby-bgm" loop preload="auto">
+    <source src="https://actions.google.com/sounds/v1/science_fiction/dark_ambient_drone.ogg" type="audio/ogg">
+</audio>
 
 <div id="app">
 
@@ -211,7 +218,7 @@
 
     <!-- 1. 起始大廳 -->
     <div id="lobby-screen" class="screen">
-        <div class="content-area" style="display: flex; flex-direction: column; justify-content: center;">
+        <div class="content-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
             <div class="ornate-box">
                 <h1>費洛蒙共鳴</h1>
                 <div class="subtitle">ABO Cinematic Engine</div>
@@ -224,13 +231,14 @@
 
     <!-- API 設定視窗 -->
     <div id="api-modal" class="modal-overlay">
-        <div class="modal-content ornate-box" style="padding: 30px 20px;">
+        <div class="modal-content ornate-box">
             <button class="close-btn" onclick="closeApiModal()">×</button>
             <h2 style="border:none;">神經網路設定</h2>
             <div class="form-group">
                 <label>選擇 AI 引擎</label>
                 <select id="api-type">
-                    <option value="gemini">Google Gemini 3.5 Flash / Pro</option>
+                    <!-- 修正為官方正式型號，確保不會404報錯 -->
+                    <option value="gemini">Google Gemini 1.5 Flash / Pro</option>
                     <option value="openai">OpenAI GPT-4o</option>
                 </select>
             </div>
@@ -244,7 +252,7 @@
 
     <!-- 讀取存檔視窗 -->
     <div id="load-modal" class="modal-overlay">
-        <div class="modal-content ornate-box" style="max-height: 80vh; display:flex; flex-direction:column; padding: 30px 20px;">
+        <div class="modal-content ornate-box" style="max-height: 80vh; display:flex; flex-direction:column;">
             <button class="close-btn" onclick="closeLoadModal()">×</button>
             <h2 style="border:none;">實相記憶庫 (Saves)</h2>
             <div id="save-list" style="overflow-y:auto; flex:1; margin-top: 10px;">
@@ -259,76 +267,79 @@
             <button class="back-btn" onclick="switchScreen('lobby-screen')">← 返回大廳</button>
         </div>
         <div class="content-area">
-            <h1>角色建構檔案</h1>
-            
-            <h2>【世界背景】</h2>
-            <div class="form-group">
-                <label>時代背景<span class="required-mark">(必填)</span></label>
-                <select id="c-era">
-                    <option value="" disabled selected>請選擇...</option>
-                    <option value="古代">古代</option>
-                    <option value="現代">現代</option>
-                    <option value="未來科技">未來科技</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>世界設定<span class="required-mark">(必填)</span></label>
-                <select id="c-setting">
-                    <option value="" disabled selected>請選擇...</option>
-                    <option value="東方">東方</option>
-                    <option value="西方">西方</option>
-                    <option value="架空世界">架空世界</option>
-                </select>
-            </div>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h1>角色建構檔案</h1>
+                
+                <h2>【世界背景】</h2>
+                <div class="form-group">
+                    <label>時代背景<span class="required-mark">(必填)</span></label>
+                    <select id="c-era">
+                        <option value="" disabled selected>請選擇...</option>
+                        <option value="古代">古代</option>
+                        <option value="現代">現代</option>
+                        <option value="未來科技">未來科技</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>世界設定<span class="required-mark">(必填)</span></label>
+                    <select id="c-setting">
+                        <option value="" disabled selected>請選擇...</option>
+                        <option value="東方">東方</option>
+                        <option value="西方">西方</option>
+                        <option value="架空世界">架空世界</option>
+                    </select>
+                </div>
 
-            <h2>【基本資料】</h2>
-            <div class="form-group"><label>姓名<span class="required-mark">(必填)</span></label><input type="text" id="c-name" placeholder="請輸入姓名..."></div>
-            <div class="form-group"><label>年齡<span class="required-mark">(必填)</span></label><input type="number" id="c-age" placeholder="請輸入數字..." min="1"></div>
-            <div class="form-group">
-                <label>第一性別<span class="required-mark">(必填)</span></label>
-                <select id="c-gender1">
-                    <option value="" disabled selected>請選擇...</option>
-                    <option value="男">男</option>
-                    <option value="女">女</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>第二性別<span class="required-mark">(必填)</span></label>
-                <select id="c-gender2" onchange="handleGender2Change()">
-                    <option value="" disabled selected>請選擇...</option>
-                    <option value="Alpha">Alpha</option>
-                    <option value="Beta">Beta</option>
-                    <option value="Omega">Omega</option>
-                    <option value="Enigma">Enigma</option>
-                    <option value="未分化">未分化</option>
-                </select>
-            </div>
+                <h2>【基本資料】</h2>
+                <div class="form-group"><label>姓名<span class="required-mark">(必填)</span></label><input type="text" id="c-name" placeholder="請輸入姓名..."></div>
+                <div class="form-group"><label>年齡<span class="required-mark">(必填)</span></label><input type="number" id="c-age" placeholder="請輸入數字..." min="1"></div>
+                <div class="form-group">
+                    <label>第一性別<span class="required-mark">(必填)</span></label>
+                    <select id="c-gender1">
+                        <option value="" disabled selected>請選擇...</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>第二性別<span class="required-mark">(必填)</span></label>
+                    <select id="c-gender2" onchange="handleGender2Change()">
+                        <option value="" disabled selected>請選擇...</option>
+                        <option value="Alpha">Alpha</option>
+                        <option value="Beta">Beta</option>
+                        <option value="Omega">Omega</option>
+                        <option value="Enigma">Enigma</option>
+                        <option value="未分化">未分化</option>
+                    </select>
+                </div>
 
-            <h2>【生理特徵】</h2>
-            <div class="form-group" id="pheromone-group">
-                <label>信息素味道</label>
-                <input type="text" id="c-pheromone" placeholder="例如：苦艾酒、白玫瑰、雨後森林...">
-            </div>
-            <div class="form-group"><label>外貌特徵</label><input type="text" id="c-appearance" placeholder="例如：銀髮紅瞳、身形單薄、偏好黑襯衫..."></div>
-            <div class="form-group"><label>整體氣質</label><input type="text" id="c-vibe" placeholder="例如：清冷禁慾、溫柔病弱、狂傲不羈..."></div>
+                <h2>【生理特徵】</h2>
+                <div class="form-group" id="pheromone-group">
+                    <!-- 電腦版動態新增必填標籤 -->
+                    <label>信息素味道<span id="pheromone-req-mark" class="required-mark" style="display:none;">(必填)</span></label>
+                    <input type="text" id="c-pheromone" placeholder="例如：苦艾酒、白玫瑰、雨後森林...">
+                </div>
+                <div class="form-group"><label>外貌特徵</label><input type="text" id="c-appearance" placeholder="例如：銀髮紅瞳、身形單薄、偏好黑襯衫..."></div>
+                <div class="form-group"><label>整體氣質</label><input type="text" id="c-vibe" placeholder="例如：清冷禁慾、溫柔病弱、狂傲不羈..."></div>
 
-            <h2>【社會與背景】</h2>
-            <div class="form-group"><label>公開職業 / 身分<span class="required-mark">(必填)</span></label><input type="text" id="c-job" placeholder="例如：軍方情報官、財閥繼承人..."></div>
-            <div class="form-group"><label>性格簡述<span class="required-mark">(必填)</span></label><textarea id="c-personality" rows="2" placeholder="簡述您的性格特徵..."></textarea></div>
-            <div class="form-group"><label>特殊背景或隱疾</label><textarea id="c-background" rows="2" placeholder="例如：腺體受損、患有信息素依賴症..."></textarea></div>
-            
-            <button class="btn" onclick="initializeGame()">生成實相 (Start)</button>
-            <div style="height: 50px;"></div>
+                <h2>【社會與背景】</h2>
+                <div class="form-group"><label>公開職業 / 身分<span class="required-mark">(必填)</span></label><input type="text" id="c-job" placeholder="例如：軍方情報官、財閥繼承人..."></div>
+                <div class="form-group"><label>性格簡述<span class="required-mark">(必填)</span></label><textarea id="c-personality" rows="3" placeholder="簡述您的性格特徵..."></textarea></div>
+                <div class="form-group"><label>特殊背景或隱疾</label><textarea id="c-background" rows="3" placeholder="例如：腺體受損、患有信息素依賴症..."></textarea></div>
+                
+                <button class="btn" onclick="initializeGame()">生成實相 (Start)</button>
+                <div style="height: 80px;"></div>
+            </div>
         </div>
     </div>
 
     <!-- 3. 遊戲主畫面 -->
     <div id="game-screen" class="screen">
         <div class="nav-bar">
-            <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存</button>
+            <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存實相</button>
             <div>
-                <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">實相</button>
-                <button class="nav-tab-btn" id="tab-status" onclick="toggleGameTab('status')">動態欄</button>
+                <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">實相閱讀區</button>
+                <button class="nav-tab-btn" id="tab-status" onclick="toggleGameTab('status')">動態履歷</button>
             </div>
             <button class="back-btn" onclick="exitGame()">離開 ➔</button>
         </div>
@@ -346,7 +357,7 @@
                 <div class="action-deck-content" id="action-deck-content">
                     <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
                     <div id="custom-action-container">
-                        <input type="text" id="custom-action-input" placeholder="觸碰以輸入行動或台詞...">
+                        <input type="text" id="custom-action-input" placeholder="點擊以輸入行動或專屬台詞...">
                         <button class="btn" id="custom-action-btn" onclick="submitCustomAction()">送出</button>
                     </div>
                 </div>
@@ -355,7 +366,9 @@
 
         <!-- 狀態欄 (無限累積) -->
         <div id="status-view">
-            <!-- 歷史動態卡片將會附加於此 -->
+            <div style="max-width: 800px; margin: 0 auto; width: 100%;" id="status-card-wrapper">
+                <!-- 歷史動態卡片將會附加於此 -->
+            </div>
         </div>
     </div>
 </div>
@@ -364,7 +377,7 @@
 /* ================= UI 與特效邏輯 ================= */
 function createGalaxy() {
     const container = document.getElementById('galaxy-container');
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 200; i++) {
         let star = document.createElement('div');
         star.className = 'star';
         let size = Math.random() * 2 + 1;
@@ -374,9 +387,18 @@ function createGalaxy() {
         star.style.animationDelay = (Math.random() * 3) + 's';
         container.appendChild(star);
     }
-    setTimeout(() => { if(document.getElementById('intro-screen').classList.contains('active')) enterLobby(); }, 4500);
 }
-function enterLobby() { switchScreen('lobby-screen'); }
+
+// 點擊銀河畫面後觸發大廳與音樂
+function enterLobby() { 
+    switchScreen('lobby-screen'); 
+    
+    // 播放環境音樂
+    const bgm = document.getElementById('lobby-bgm');
+    bgm.volume = 0.6;
+    bgm.play().catch(e => console.log("瀏覽器自動播放限制，需等待互動:", e));
+}
+
 function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
@@ -389,16 +411,20 @@ function openLoadModal() {
 }
 function closeLoadModal() { document.getElementById('load-modal').classList.remove('active'); }
 
-// 角色卡邏輯：Beta/未分化 隱藏信息素
+// 角色卡邏輯：動態防呆與信息素隱藏
 function handleGender2Change() {
     const gender2 = document.getElementById('c-gender2').value;
     const pheromoneGroup = document.getElementById('pheromone-group');
     const pheromoneInput = document.getElementById('c-pheromone');
+    const reqMark = document.getElementById('pheromone-req-mark');
+    
     if (gender2 === 'Beta' || gender2 === '未分化') {
         pheromoneGroup.style.display = 'none';
         pheromoneInput.value = ''; 
+        reqMark.style.display = 'none';
     } else {
         pheromoneGroup.style.display = 'block';
+        reqMark.style.display = 'inline'; // 顯示必填標籤
     }
 }
 
@@ -430,7 +456,7 @@ let chatHistory = [];
 let characterProfile = "";
 let currentSaveName = "";
 
-/* ================= 系統提示詞設定 (升級屬性與要求) ================= */
+/* ================= 系統提示詞設定 ================= */
 const SYSTEM_PROMPT = `
 你是《費洛蒙共鳴：ABO Cinematic Engine》的DM，世界觀主宰者與頂級小說家。
 
@@ -460,8 +486,8 @@ const SYSTEM_PROMPT = `
 當前姿勢： [具體姿勢描寫]
 性慾指數： [0-100%]
 信任值： [0-100%，影響是否卸下防備]
-佔有慾： [0-100%，針對Alpha/Enigma]
-依賴性： [0-100%，針對Omega]
+佔慾值： [0-100%，針對Alpha/Enigma]
+依賴值： [0-100%，針對Omega]
 關係流轉： [簡述羈絆]
 他的心聲： [20字內，展露真實波瀾]
 </Status_Bar>
@@ -484,7 +510,6 @@ function saveGameProgress() {
         timestamp: new Date().toLocaleString()
     };
     
-    // 如果有同名的，可以直接覆蓋，或當作新檔。這裡簡單處理為直接新增。
     saves.push(newSave);
     localStorage.setItem('aboSaves', JSON.stringify(saves));
     alert("實相記憶已成功儲存！");
@@ -497,15 +522,14 @@ function renderSaveList() {
     if(saves.length === 0) {
         list.innerHTML = '<p style="color:var(--text-secondary); text-align:center; margin-top:20px;">目前沒有任何存檔。</p>';
     } else {
-        // 從新到舊排列
         saves.reverse().forEach(s => {
             const div = document.createElement('div');
             div.className = 'save-item';
             div.innerHTML = `
                 <div class="save-item-info"><strong>${s.name}</strong><small>${s.timestamp}</small></div>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn btn-outline" style="width:auto; padding:5px 15px; margin:0;" onclick="loadGame(${s.id})">讀取</button>
-                    <button class="btn btn-outline" style="width:auto; padding:5px 15px; margin:0; border-color:#8a0303; color:#8a0303" onclick="deleteSave(${s.id}, event)">刪除</button>
+                    <button class="btn btn-outline" style="width:auto; padding:8px 15px; margin:0;" onclick="loadGame(${s.id})">讀取</button>
+                    <button class="btn btn-outline" style="width:auto; padding:8px 15px; margin:0; border-color:#8a0303; color:#8a0303" onclick="deleteSave(${s.id}, event)">刪除</button>
                 </div>
             `;
             list.appendChild(div);
@@ -536,11 +560,9 @@ function loadGame(id) {
     closeLoadModal();
     switchScreen('game-screen');
     
-    // 清除舊畫面並重繪
     document.getElementById('story-container').innerHTML = '';
-    document.getElementById('status-view').innerHTML = ''; // 清空狀態履歷
+    document.getElementById('status-card-wrapper').innerHTML = ''; 
     
-    // 重建對話歷史與UI
     chatHistory.forEach((msg, index) => {
         if(msg.role === 'user') {
             let text = msg.content || (msg.parts && msg.parts[0].text);
@@ -550,7 +572,6 @@ function loadGame(id) {
             }
         } else {
             let text = msg.content || (msg.parts && msg.parts[0].text);
-            // 只有最後一則 AI 訊息才需要渲染操作面板
             const isLast = (index === chatHistory.length - 1);
             renderUIFromXML(text, isLast);
         }
@@ -569,7 +590,7 @@ function checkApiAndProceed(action) {
 function exitGame() {
     if(confirm("確定要離開當前實相嗎？未儲存的進度將會遺失。")) {
         document.getElementById('story-container').innerHTML = '';
-        document.getElementById('status-view').innerHTML = '';
+        document.getElementById('status-card-wrapper').innerHTML = '';
         document.getElementById('action-deck').style.display = 'none';
         chatHistory = []; currentSaveName = "";
         toggleGameTab('story'); 
@@ -584,22 +605,29 @@ function initializeGame() {
     const age = document.getElementById('c-age').value.trim();
     const g1 = document.getElementById('c-gender1').value;
     const g2 = document.getElementById('c-gender2').value;
-    const pheromone = document.getElementById('c-pheromone').value.trim() || "無";
+    const pheromone = document.getElementById('c-pheromone').value.trim();
     const appearance = document.getElementById('c-appearance').value.trim() || "無特別描述";
     const vibe = document.getElementById('c-vibe').value.trim() || "無特別描述";
     const job = document.getElementById('c-job').value.trim();
     const personality = document.getElementById('c-personality').value.trim();
     const bg = document.getElementById('c-background').value.trim() || "無特別背景";
 
+    // 基本必填檢查
     if(!era || !setting || !name || !age || !g1 || !g2 || !job || !personality) {
         alert("請完整填寫所有標註 (必填) 的欄位！"); return;
+    }
+    // 信息素必填檢查 (如果不是 Beta 且 不是 未分化)
+    if(g2 !== 'Beta' && g2 !== '未分化') {
+        if(!pheromone) {
+            alert("非 Beta / 未分化者，【信息素味道】為必填！"); return;
+        }
     }
 
     characterProfile = `【玩家角色卡】
 時代背景：${era} | 世界設定：${setting}
 姓名：${name} (年齡: ${age})
 性別：${g1} / ${g2}
-信息素：${pheromone}
+信息素：${pheromone || "無"}
 外貌：${appearance}
 氣質：${vibe}
 職業身分：${job}
@@ -610,7 +638,7 @@ function initializeGame() {
 
     currentSaveName = "";
     document.getElementById('story-container').innerHTML = '';
-    document.getElementById('status-view').innerHTML = '';
+    document.getElementById('status-card-wrapper').innerHTML = '';
     switchScreen('game-screen');
     sendToAI(characterProfile, true);
 }
@@ -637,8 +665,8 @@ function appendLog(text, type) {
         const div = document.createElement('div');
         div.className = 'story-paragraph';
         div.style.color = 'var(--text-secondary)'; div.style.fontStyle = 'italic';
-        div.style.textAlign = 'right'; div.style.borderRight = '3px solid var(--gold-accent)';
-        div.style.paddingRight = '10px'; div.innerText = text; 
+        div.style.textAlign = 'right'; div.style.borderRight = '4px solid var(--gold-accent)';
+        div.style.paddingRight = '15px'; div.innerText = text; 
         container.appendChild(div);
     } else {
         const paragraphs = text.split('\n').filter(p => p.trim() !== '');
@@ -648,8 +676,8 @@ function appendLog(text, type) {
             container.appendChild(pDiv);
         });
     }
-    // 平滑滾動到底部
-    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+    // 平滑滾動
+    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 150);
 }
 
 function renderUIFromXML(xmlString, renderOptions = true) {
@@ -660,7 +688,7 @@ function renderUIFromXML(xmlString, renderOptions = true) {
 
     if (statusMatch) {
         const statusBarData = statusMatch[1].trim().split('\n').filter(l => l.trim() !== '');
-        let statusHtml = `<h3>動態更新</h3>`;
+        let statusHtml = `<h3>實相動態更新</h3>`;
         
         statusBarData.forEach(line => {
             let parts = line.split('：');
@@ -677,11 +705,10 @@ function renderUIFromXML(xmlString, renderOptions = true) {
             }
         });
         
-        // 建立新卡片並「置頂」於狀態欄
         const newCard = document.createElement('div');
         newCard.className = 'status-card';
         newCard.innerHTML = statusHtml;
-        document.getElementById('status-view').prepend(newCard);
+        document.getElementById('status-card-wrapper').prepend(newCard);
     }
 
     if(renderOptions) {
@@ -731,7 +758,8 @@ async function sendToAI(promptText, isInit = false) {
             if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
             else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
+            // 嚴格修正為官方穩定的 gemini-1.5-flash 模型，避免 404 報錯
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
