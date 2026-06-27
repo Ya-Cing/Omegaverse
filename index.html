@@ -198,7 +198,7 @@
             <div class="form-group">
                 <label>選擇 AI 引擎</label>
                 <select id="api-type">
-                    <option value="gemini">Google Gemini 1.5 Flash / Pro</option>
+                    <option value="gemini">Google Gemini 3.5 Flash / Pro</option>
                     <option value="openai">OpenAI GPT-4o</option>
                 </select>
             </div>
@@ -589,7 +589,7 @@ async function sendToAI(promptText, isInit = false) {
             if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
             else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiConfig.key}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
