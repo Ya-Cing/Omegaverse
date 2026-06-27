@@ -474,7 +474,7 @@ async function sendToAI(promptText, isInit = false) {
                 chatHistory.push({ role: "user", parts: [{ text: promptText }] });
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-latest:generateContent?key=${apiConfig.key}`;
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-3.5-flash-latest:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
