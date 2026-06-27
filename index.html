@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>費洛蒙共鳴｜ABO Cinematic Engine</title>
-    <!-- 引入 Noto Serif 作為源雲明體的備用字體 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -14,7 +13,6 @@
             --text-secondary: #9e9e9e;
             --accent-color: #8a0303;
             --gold-accent: #c2a370;
-            /* 優先使用源雲明體，備用 Noto Serif TC */
             --font-main: 'GenWanMin', '源雲明體', 'Noto Serif TC', serif;
         }
 
@@ -24,35 +22,27 @@
             background-color: #000;
             color: var(--text-primary);
             font-family: var(--font-main);
-            line-height: 2.2; /* 拉開行距，增加呼吸感 */
+            line-height: 2.2; 
             letter-spacing: 0.05em;
             display: flex;
             justify-content: center;
-            height: 100dvh; /* 使用動態視口高度，解決手機瀏覽器被截斷/太低的問題 */
+            height: 100dvh; 
             overflow: hidden;
+            background-image: radial-gradient(rgba(138, 3, 3, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
         #app {
-            width: 100%;
-            max-width: 480px;
-            height: 100dvh;
-            background-color: var(--bg-color);
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            width: 100%; max-width: 480px; height: 100dvh;
+            background-color: var(--bg-color); position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,1); display: flex;
+            flex-direction: column; overflow: hidden;
         }
 
         .screen {
-            display: none;
-            width: 100%;
-            height: 100%;
-            flex-direction: column;
-            position: absolute;
-            top: 0; left: 0;
-            background-color: var(--bg-color);
-            z-index: 1;
+            display: none; width: 100%; height: 100%;
+            flex-direction: column; position: absolute;
+            top: 0; left: 0; background-color: var(--bg-color); z-index: 1;
         }
         .screen.active { display: flex; animation: fadeIn 1.2s ease forwards; z-index: 5; }
 
@@ -72,27 +62,41 @@
         .intro-text { color: var(--gold-accent); font-size: 14px; letter-spacing: 0.4em; z-index: 2; animation: pulseText 2s infinite alternate; }
         @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; text-shadow: 0 0 10px var(--gold-accent); } }
 
+        /* ================= 裝飾花紋框 (大廳 & Modal) ================= */
+        .ornate-box {
+            position: relative; border: 1px solid rgba(194, 163, 112, 0.3);
+            background: rgba(10, 10, 12, 0.8); backdrop-filter: blur(5px);
+            padding: 40px 20px; border-radius: 4px; box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+        }
+        .ornate-box::before, .ornate-box::after {
+            content: ''; position: absolute; width: 30px; height: 30px; border-color: var(--gold-accent); border-style: solid;
+        }
+        .ornate-box::before { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
+        .ornate-box::after { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
+
         /* ================= 導覽列 ================= */
         .nav-bar {
             width: 100%; padding: 15px 20px; background: rgba(10, 10, 12, 0.95);
-            border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(194, 163, 112, 0.2); display: flex; align-items: center; justify-content: space-between;
             position: sticky; top: 0; z-index: 20;
         }
-        .back-btn {
+        .back-btn, .action-text-btn {
             background: none; border: none; color: var(--text-secondary);
             font-family: var(--font-main); font-size: 14px; cursor: pointer; transition: color 0.3s;
+            display: flex; align-items: center; gap: 5px;
         }
-        .back-btn:hover { color: var(--gold-accent); }
+        .back-btn:hover, .action-text-btn:hover { color: var(--gold-accent); }
+        
         .nav-tab-btn {
             background: none; border: 1px solid var(--text-secondary); color: var(--text-secondary);
             padding: 4px 10px; border-radius: 4px; font-family: var(--font-main); font-size: 12px; cursor: pointer; transition: all 0.3s;
         }
         .nav-tab-btn.active { border-color: var(--gold-accent); color: var(--gold-accent); }
 
-        /* ================= 內容區塊與表單 ================= */
+        /* ================= 內容區塊 ================= */
         .content-area { flex: 1; overflow-y: auto; padding: 30px 20px; }
-        h1 { color: var(--gold-accent); font-weight: 300; font-size: 28px; text-align: center; margin-bottom: 10px; letter-spacing: 0.15em; }
-        .subtitle { text-align: center; color: var(--accent-color); font-size: 12px; margin-bottom: 50px; letter-spacing: 0.2em; }
+        h1 { color: var(--gold-accent); font-weight: 300; font-size: 28px; text-align: center; margin-bottom: 5px; letter-spacing: 0.15em; }
+        .subtitle { text-align: center; color: var(--accent-color); font-size: 12px; margin-bottom: 40px; letter-spacing: 0.2em; }
         h2 { color: var(--accent-color); font-size: 18px; margin-bottom: 20px; font-weight: 600; border-bottom: 1px solid #333; padding-bottom: 10px; }
         
         .form-group { margin-bottom: 20px; text-align: left; }
@@ -100,8 +104,7 @@
         label { display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 5px; }
         input, select, textarea {
             width: 100%; padding: 12px; background: var(--surface-color); border: 1px solid #333;
-            color: var(--text-primary); font-family: var(--font-main); outline: none; border-radius: 4px; transition: border-color 0.3s;
-            font-size: 15px;
+            color: var(--text-primary); font-family: var(--font-main); outline: none; border-radius: 4px; transition: border-color 0.3s; font-size: 15px;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--accent-color); }
         
@@ -110,58 +113,56 @@
             border: none; border-radius: 4px; font-family: var(--font-main); font-size: 16px;
             cursor: pointer; letter-spacing: 0.1em; transition: all 0.3s; margin-top: 10px;
         }
-        .btn:hover { background: #a00; }
+        .btn:hover { background: #a00; box-shadow: 0 0 15px rgba(138,3,3,0.6); }
         .btn-outline { background: transparent; border: 1px solid var(--text-secondary); color: var(--text-secondary); }
         .btn-outline:hover { border-color: var(--gold-accent); color: var(--gold-accent); }
 
-        /* ================= Modal 設定區 ================= */
+        /* ================= 彈窗設定 (Modal) ================= */
         .modal-overlay {
             display: none; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.85);
             z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px);
         }
         .modal-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
-        .modal-content { background: var(--surface-color); width: 100%; max-width: 400px; padding: 30px 20px; border-radius: 8px; border: 1px solid #333; position: relative; }
-        .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; transition: color 0.3s; }
+        .modal-content { width: 100%; max-width: 400px; }
+        .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; transition: color 0.3s; z-index: 10; }
         .close-btn:hover { color: #fff; }
+
+        /* ================= 存檔清單樣式 ================= */
+        .save-item {
+            background: rgba(22, 22, 26, 0.8); border: 1px solid #333; padding: 15px;
+            border-radius: 4px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .save-item-info strong { color: var(--gold-accent); font-size: 15px; letter-spacing: 1px; }
+        .save-item-info small { color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px; }
 
         /* ================= 遊戲主畫面 (正文) ================= */
         #game-view { display: flex; flex-direction: column; height: 100%; position: relative; }
         #story-container { flex: 1; overflow-y: auto; padding: 20px 20px 200px 20px; scroll-behavior: smooth; }
-        
-        /* 段落舒適化：空行拉開 */
         .story-paragraph { 
-            margin-bottom: 2em; /* 段落間隔為兩個空行高度 */
-            opacity: 0; 
-            transform: translateY(10px); 
-            animation: slideUp 0.8s forwards; 
-            text-align: justify; 
-            font-size: 16px;
+            margin-bottom: 2em; opacity: 0; transform: translateY(10px); animation: slideUp 0.8s forwards; 
+            text-align: justify; font-size: 16px; 
         }
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
         /* ================= 可折疊選項面板 ================= */
         #action-deck {
             position: absolute; bottom: 0; width: 100%; background: var(--bg-color);
-            border-top: 1px solid #333; display: flex; flex-direction: column;
+            border-top: 1px solid rgba(194, 163, 112, 0.3); display: flex; flex-direction: column;
             box-shadow: 0 -15px 30px rgba(0,0,0,0.9); z-index: 50; transition: transform 0.3s ease;
-            padding-bottom: env(safe-area-inset-bottom); /* 適配 iPhone 底部橫條 */
+            padding-bottom: env(safe-area-inset-bottom);
         }
         .action-deck-header {
             padding: 18px 10px; text-align: center; color: var(--gold-accent); font-size: 14px;
-            cursor: pointer; background: rgba(22, 22, 26, 1); border-bottom: 1px solid #222;
-            letter-spacing: 0.1em;
+            cursor: pointer; background: rgba(10, 10, 12, 0.95); border-bottom: 1px solid #222; letter-spacing: 0.1em;
         }
         .action-deck-content {
             padding: 15px 20px; display: flex; flex-direction: column; gap: 10px;
-            transition: max-height 0.3s ease, padding 0.3s ease; overflow: hidden;
-            max-height: 450px; 
+            transition: max-height 0.3s ease, padding 0.3s ease; overflow: hidden; max-height: 450px; 
         }
         .action-deck-content.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; border-top: none; }
-        
         .choice-btn {
             background: var(--surface-color); border: 1px solid #444; color: var(--text-primary);
-            padding: 14px 12px; text-align: left; border-radius: 4px; cursor: pointer; font-family: var(--font-main); transition: all 0.3s;
-            font-size: 15px; line-height: 1.5;
+            padding: 14px 12px; text-align: left; border-radius: 4px; cursor: pointer; font-family: var(--font-main); transition: all 0.3s; font-size: 15px; line-height: 1.5;
         }
         .choice-btn:hover { border-color: var(--gold-accent); background: #222; }
         #custom-action-container { display: flex; gap: 10px; margin-top: 5px; }
@@ -171,48 +172,38 @@
         /* ================= 狀態欄頁面 ================= */
         #status-view {
             display: none; flex-direction: column; height: 100%; background: var(--bg-color);
-            padding: 20px; overflow-y: auto; position: absolute; top: 60px; left: 0; right: 0; bottom: 0; z-index: 15;
+            padding: 20px 20px 100px 20px; overflow-y: auto; position: absolute; top: 60px; left: 0; right: 0; bottom: 0; z-index: 15;
         }
         .status-card {
             background: rgba(22, 22, 26, 0.95); border: 1px solid #333; border-left: 3px solid var(--accent-color);
             padding: 20px; font-size: 15px; color: var(--text-secondary); border-radius: 4px; margin-bottom: 20px; line-height: 2.0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            animation: fadeIn 0.5s ease;
         }
-        .status-card h3 { color: var(--text-primary); margin-bottom: 15px; font-weight: 400; letter-spacing: 0.1em; }
-        .status-item { margin-bottom: 12px; display: flex; flex-direction: column;}
+        .status-card h3 { color: var(--text-primary); margin-bottom: 15px; font-weight: 400; letter-spacing: 0.1em; border-bottom: 1px solid #333; padding-bottom: 10px;}
+        .status-item { margin-bottom: 10px; display: flex; flex-direction: column;}
         .status-item span.label { color: var(--gold-accent); font-size: 12px; margin-bottom: 2px; }
-        .status-heart { color: var(--accent-color); font-style: italic; margin-top: 20px; padding-top: 15px; border-top: 1px dashed #333; font-size: 16px;}
+        .status-heart { color: var(--accent-color); font-style: italic; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #333; font-size: 16px;}
 
-        /* ================= 中央半透明演算中視窗 ================= */
+        /* ================= 演算中彈窗 ================= */
         #loading-modal {
             display: none; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7);
             z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);
         }
         .loading-box {
-            background: rgba(22, 22, 26, 0.95);
-            border: 1px solid var(--accent-color);
-            padding: 30px 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(138, 3, 3, 0.4);
-            text-align: center;
-            animation: pulseBg 1.5s infinite alternate;
+            background: rgba(22, 22, 26, 0.95); border: 1px solid var(--accent-color);
+            padding: 30px 40px; border-radius: 8px; box-shadow: 0 0 20px rgba(138, 3, 3, 0.4);
+            text-align: center; animation: pulseBg 1.5s infinite alternate;
         }
-        .loading-text {
-            color: var(--gold-accent);
-            font-size: 15px;
-            letter-spacing: 0.2em;
-            font-family: var(--font-main);
-        }
-        @keyframes pulseBg {
-            0% { box-shadow: 0 0 10px rgba(138, 3, 3, 0.2); }
-            100% { box-shadow: 0 0 25px rgba(138, 3, 3, 0.8); }
-        }
+        .loading-text { color: var(--gold-accent); font-size: 15px; letter-spacing: 0.2em; font-family: var(--font-main); }
+        @keyframes pulseBg { 0% { box-shadow: 0 0 10px rgba(138, 3, 3, 0.2); } 100% { box-shadow: 0 0 25px rgba(138, 3, 3, 0.8); } }
     </style>
 </head>
 <body>
 
 <div id="app">
 
-    <!-- 0. 銀河開場畫面 -->
+    <!-- 0. 銀河開場 -->
     <div id="intro-screen" class="screen active" onclick="enterLobby()">
         <div id="galaxy-container"></div>
         <div class="intro-text">觸碰以進入實相</div>
@@ -220,19 +211,22 @@
 
     <!-- 1. 起始大廳 -->
     <div id="lobby-screen" class="screen">
-        <div class="content-area" id="lobby-content">
-            <h1>費洛蒙共鳴</h1>
-            <div class="subtitle">ABO Cinematic Engine</div>
-            <button class="btn" onclick="checkApiAndProceed()">進入實相 (Start Game)</button>
-            <button class="btn btn-outline" onclick="openApiModal()">神經網路設定 (API Key)</button>
+        <div class="content-area" style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="ornate-box">
+                <h1>費洛蒙共鳴</h1>
+                <div class="subtitle">ABO Cinematic Engine</div>
+                <button class="btn" onclick="checkApiAndProceed('new')">創立實相 (New Game)</button>
+                <button class="btn btn-outline" onclick="openLoadModal()">讀取實相 (Load Game)</button>
+                <button class="btn btn-outline" style="border-color: #333;" onclick="openApiModal()">神經網路設定</button>
+            </div>
         </div>
     </div>
 
     <!-- API 設定視窗 -->
     <div id="api-modal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content ornate-box" style="padding: 30px 20px;">
             <button class="close-btn" onclick="closeApiModal()">×</button>
-            <h2 style="margin-bottom: 20px; text-align: left; border:none;">神經網路設定</h2>
+            <h2 style="border:none;">神經網路設定</h2>
             <div class="form-group">
                 <label>選擇 AI 引擎</label>
                 <select id="api-type">
@@ -241,14 +235,25 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>API Key (必填，僅儲存於設備本地端)</label>
-                <input type="password" id="api-key" placeholder="輸入您的密鑰...">
+                <label>API Key (必填，僅儲存於本地端)</label>
+                <input type="password" id="api-key" placeholder="輸入密鑰...">
             </div>
             <button class="btn" onclick="saveApiConfig()">儲存設定</button>
         </div>
     </div>
 
-    <!-- 2. 角色建構檔案 (必填防呆版) -->
+    <!-- 讀取存檔視窗 -->
+    <div id="load-modal" class="modal-overlay">
+        <div class="modal-content ornate-box" style="max-height: 80vh; display:flex; flex-direction:column; padding: 30px 20px;">
+            <button class="close-btn" onclick="closeLoadModal()">×</button>
+            <h2 style="border:none;">實相記憶庫 (Saves)</h2>
+            <div id="save-list" style="overflow-y:auto; flex:1; margin-top: 10px;">
+                <!-- 存檔清單生成區 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 角色建構檔案 -->
     <div id="creation-screen" class="screen">
         <div class="nav-bar">
             <button class="back-btn" onclick="switchScreen('lobby-screen')">← 返回大廳</button>
@@ -256,6 +261,26 @@
         <div class="content-area">
             <h1>角色建構檔案</h1>
             
+            <h2>【世界背景】</h2>
+            <div class="form-group">
+                <label>時代背景<span class="required-mark">(必填)</span></label>
+                <select id="c-era">
+                    <option value="" disabled selected>請選擇...</option>
+                    <option value="古代">古代</option>
+                    <option value="現代">現代</option>
+                    <option value="未來科技">未來科技</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>世界設定<span class="required-mark">(必填)</span></label>
+                <select id="c-setting">
+                    <option value="" disabled selected>請選擇...</option>
+                    <option value="東方">東方</option>
+                    <option value="西方">西方</option>
+                    <option value="架空世界">架空世界</option>
+                </select>
+            </div>
+
             <h2>【基本資料】</h2>
             <div class="form-group"><label>姓名<span class="required-mark">(必填)</span></label><input type="text" id="c-name" placeholder="請輸入姓名..."></div>
             <div class="form-group"><label>年齡<span class="required-mark">(必填)</span></label><input type="number" id="c-age" placeholder="請輸入數字..." min="1"></div>
@@ -300,59 +325,46 @@
     <!-- 3. 遊戲主畫面 -->
     <div id="game-screen" class="screen">
         <div class="nav-bar">
-            <button class="back-btn" onclick="exitGame()">← 結束</button>
+            <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存</button>
             <div>
                 <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">實相</button>
                 <button class="nav-tab-btn" id="tab-status" onclick="toggleGameTab('status')">動態欄</button>
             </div>
+            <button class="back-btn" onclick="exitGame()">離開 ➔</button>
         </div>
         
-        <!-- 正文視圖 -->
+        <!-- 正文 -->
         <div id="game-view">
             <div id="story-container"></div>
-            
-            <!-- 中央半透明演算彈窗 -->
+            <!-- 演算中 -->
             <div id="loading-modal">
-                <div class="loading-box">
-                    <div class="loading-text">實相極致演算中...</div>
-                </div>
+                <div class="loading-box"><div class="loading-text">實相極致演算中...</div></div>
             </div>
-            
-            <!-- 可折疊控制面板 -->
+            <!-- 面板 -->
             <div id="action-deck" style="display: none;">
-                <div class="action-deck-header" onclick="toggleActionDeck()" id="action-deck-toggle">
-                    ▼ 收起操作面板
-                </div>
+                <div class="action-deck-header" onclick="toggleActionDeck()" id="action-deck-toggle">▼ 收起操作面板</div>
                 <div class="action-deck-content" id="action-deck-content">
                     <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
                     <div id="custom-action-container">
-                        <!-- 支援手機語音鍵盤輸入的 input -->
-                        <input type="text" id="custom-action-input" placeholder="觸碰以輸入行動或台詞 (支援手機語音輸入)">
+                        <input type="text" id="custom-action-input" placeholder="觸碰以輸入行動或台詞...">
                         <button class="btn" id="custom-action-btn" onclick="submitCustomAction()">送出</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 狀態欄視圖 (獨立頁面) -->
+        <!-- 狀態欄 (無限累積) -->
         <div id="status-view">
-            <div class="status-card" id="status-card-content">
-                <h3>當前世界動態</h3>
-                <div style="color: var(--text-secondary); font-style: italic; font-size: 13px;">實相推進後將在此更新最新狀態與隱藏數值...</div>
-            </div>
+            <!-- 歷史動態卡片將會附加於此 -->
         </div>
-
     </div>
-
 </div>
 
 <script>
-/* ================= UI 互動邏輯 ================= */
-// 銀河特效
+/* ================= UI 與特效邏輯 ================= */
 function createGalaxy() {
     const container = document.getElementById('galaxy-container');
-    const starCount = 150;
-    for (let i = 0; i < starCount; i++) {
+    for (let i = 0; i < 150; i++) {
         let star = document.createElement('div');
         star.className = 'star';
         let size = Math.random() * 2 + 1;
@@ -364,7 +376,6 @@ function createGalaxy() {
     }
     setTimeout(() => { if(document.getElementById('intro-screen').classList.contains('active')) enterLobby(); }, 4500);
 }
-
 function enterLobby() { switchScreen('lobby-screen'); }
 function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -372,13 +383,18 @@ function switchScreen(screenId) {
 }
 function openApiModal() { document.getElementById('api-modal').classList.add('active'); }
 function closeApiModal() { document.getElementById('api-modal').classList.remove('active'); }
+function openLoadModal() { 
+    renderSaveList(); 
+    document.getElementById('load-modal').classList.add('active'); 
+}
+function closeLoadModal() { document.getElementById('load-modal').classList.remove('active'); }
 
-// 角色卡邏輯：Beta 隱藏信息素
+// 角色卡邏輯：Beta/未分化 隱藏信息素
 function handleGender2Change() {
     const gender2 = document.getElementById('c-gender2').value;
     const pheromoneGroup = document.getElementById('pheromone-group');
     const pheromoneInput = document.getElementById('c-pheromone');
-    if (gender2 === 'Beta') {
+    if (gender2 === 'Beta' || gender2 === '未分化') {
         pheromoneGroup.style.display = 'none';
         pheromoneInput.value = ''; 
     } else {
@@ -386,13 +402,10 @@ function handleGender2Change() {
     }
 }
 
-// 遊戲內分頁切換 (實相/狀態欄)
+// 分頁切換 (實相/狀態)
 function toggleGameTab(tabName) {
-    const btnStory = document.getElementById('tab-story');
-    const btnStatus = document.getElementById('tab-status');
-    const viewStory = document.getElementById('game-view');
-    const viewStatus = document.getElementById('status-view');
-
+    const btnStory = document.getElementById('tab-story'), btnStatus = document.getElementById('tab-status');
+    const viewStory = document.getElementById('game-view'), viewStatus = document.getElementById('status-view');
     if (tabName === 'story') {
         btnStory.classList.add('active'); btnStatus.classList.remove('active');
         viewStory.style.display = 'flex'; viewStatus.style.display = 'none';
@@ -402,36 +415,35 @@ function toggleGameTab(tabName) {
     }
 }
 
-// 選項折疊邏輯
+// 面板折疊
 let isDeckCollapsed = false;
 function toggleActionDeck() {
-    const content = document.getElementById('action-deck-content');
-    const toggle = document.getElementById('action-deck-toggle');
+    const content = document.getElementById('action-deck-content'), toggle = document.getElementById('action-deck-toggle');
     isDeckCollapsed = !isDeckCollapsed;
-    
-    if (isDeckCollapsed) {
-        content.classList.add('collapsed');
-        toggle.innerText = '▲ 展開操作面板';
-    } else {
-        content.classList.remove('collapsed');
-        toggle.innerText = '▼ 收起操作面板';
-    }
+    if (isDeckCollapsed) { content.classList.add('collapsed'); toggle.innerText = '▲ 展開操作面板'; } 
+    else { content.classList.remove('collapsed'); toggle.innerText = '▼ 收起操作面板'; }
 }
 
-/* ================= 系統提示詞設定 (1500字極限擴寫版) ================= */
+/* ================= 核心 AI 與存檔變數 ================= */
+let apiConfig = { type: 'gemini', key: '' };
+let chatHistory = [];
+let characterProfile = "";
+let currentSaveName = "";
+
+/* ================= 系統提示詞設定 (升級屬性與要求) ================= */
 const SYSTEM_PROMPT = `
 你是《費洛蒙共鳴：ABO Cinematic Engine》的DM，世界觀主宰者與頂級小說家。
 
 【敘事品質絕對要求】
-1. 回覆長度限制：每次的劇情推進【絕對不可低於 1500 字】，必須是極其詳細、長篇的小說描寫。將每一個微小的動作、眼神交會、氣味變化進行深度擴寫。
-2. 沉浸與感官：必須充滿極致的感官描寫（氣味的拉扯、呼吸的頻率、微表情、體溫）、心理劇烈拉扯與環境烘托。拒絕流水帳，每一句都要有張力。
-3. ABO世界觀深度：深刻展現 Alpha的領地侵略性/易感期、Omega的本能臣服/發情熱、或 Beta的清醒抽離。將信息素作為實體的壓迫或誘惑來描寫。
-4. 絕對禁止OOC：NPC具備獨立、立體的靈魂與教養，不會無腦倒貼或莫名暴怒。必須根據雙方地位與互動慢慢推進。
-5. 所有解析必須靜默運算，絕對不可在文本提及系統、數值變動、好感度等字眼。
+1. 回覆長度限制：每次劇情推進【絕對不可低於 1500 字】，極其詳細地擴寫每一個動作、眼神交會、心理拉扯。
+2. 沉浸與感官：必須充滿極致的感官描寫（氣味、呼吸、體溫）。
+3. 角色與多樣性：每一次登場的NPC人名請盡量不要重複，保持世界觀的多樣性與廣度。NPC不准無腦倒貼。
+4. 隱藏演算：「信息素匹配度」為DM開局暗自設定的隱藏數值，僅從劇情氛圍流露，絕對不可直接寫在狀態欄中。
+5. 禁止OOC及所有系統文字。
 
-【強制輸出格式】(必須嚴格遵守 XML 格式輸出)：
+【強制輸出格式】(嚴格遵守 XML，不要加入其他對話)：
 <Cinematic_Novel>
-(在這裡撰寫超過 1500 字的極致小說正文，嚴格遵守單一鏡頭換行法則，對話與動作必須交替)
+(在這裡撰寫超過 1500 字的極致小說正文，嚴格遵守單一鏡頭換行法則)
 </Cinematic_Novel>
 
 <Player_Choices>
@@ -447,43 +459,127 @@ const SYSTEM_PROMPT = `
 時間： [yyyy/mm/dd 24hr]
 當前姿勢： [具體姿勢描寫]
 性慾指數： [0-100%]
+信任值： [0-100%，影響是否卸下防備]
+佔有慾： [0-100%，針對Alpha/Enigma]
+依賴性： [0-100%，針對Omega]
 關係流轉： [簡述羈絆]
 他的心聲： [20字內，展露真實波瀾]
 </Status_Bar>
 `;
 
-/* ================= API 與核心邏輯 ================= */
-let apiConfig = { type: 'gemini', key: '' };
-let chatHistory = [];
-let characterProfile = "";
+/* ================= 存檔系統 (Save/Load) ================= */
+function saveGameProgress() {
+    if(chatHistory.length === 0) return alert("目前沒有可儲存的進度。");
+    const saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
+    const defaultName = currentSaveName || new Date().toLocaleString();
+    const saveName = prompt("請為此實相記憶命名：", defaultName);
+    if(!saveName) return;
+    
+    currentSaveName = saveName;
+    const newSave = {
+        id: Date.now(),
+        name: saveName,
+        chatHistory: chatHistory,
+        profile: characterProfile,
+        timestamp: new Date().toLocaleString()
+    };
+    
+    // 如果有同名的，可以直接覆蓋，或當作新檔。這裡簡單處理為直接新增。
+    saves.push(newSave);
+    localStorage.setItem('aboSaves', JSON.stringify(saves));
+    alert("實相記憶已成功儲存！");
+}
 
-function checkApiAndProceed() {
+function renderSaveList() {
+    const saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
+    const list = document.getElementById('save-list');
+    list.innerHTML = '';
+    if(saves.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-secondary); text-align:center; margin-top:20px;">目前沒有任何存檔。</p>';
+    } else {
+        // 從新到舊排列
+        saves.reverse().forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'save-item';
+            div.innerHTML = `
+                <div class="save-item-info"><strong>${s.name}</strong><small>${s.timestamp}</small></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-outline" style="width:auto; padding:5px 15px; margin:0;" onclick="loadGame(${s.id})">讀取</button>
+                    <button class="btn btn-outline" style="width:auto; padding:5px 15px; margin:0; border-color:#8a0303; color:#8a0303" onclick="deleteSave(${s.id}, event)">刪除</button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+}
+
+function deleteSave(id, event) {
+    event.stopPropagation();
+    if(!confirm("確定要刪除這筆實相記憶嗎？")) return;
+    let saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
+    saves = saves.filter(s => s.id !== id);
+    localStorage.setItem('aboSaves', JSON.stringify(saves));
+    renderSaveList();
+}
+
+function loadGame(id) {
+    if (!apiConfig.key) return alert("請先在神經網路設定中輸入 API Key 才能讀取實相。");
+    
+    const saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
+    const save = saves.find(s => s.id === id);
+    if(!save) return alert("存檔已遺失或損毀。");
+    
+    chatHistory = save.chatHistory;
+    characterProfile = save.profile;
+    currentSaveName = save.name;
+    
+    closeLoadModal();
+    switchScreen('game-screen');
+    
+    // 清除舊畫面並重繪
+    document.getElementById('story-container').innerHTML = '';
+    document.getElementById('status-view').innerHTML = ''; // 清空狀態履歷
+    
+    // 重建對話歷史與UI
+    chatHistory.forEach((msg, index) => {
+        if(msg.role === 'user') {
+            let text = msg.content || (msg.parts && msg.parts[0].text);
+            if(text && text.includes('玩家選擇了行動：')) {
+                const actionText = text.replace('玩家選擇了行動：', '').split('。')[0];
+                appendLog(`【你的行動】 ${actionText}`, 'user');
+            }
+        } else {
+            let text = msg.content || (msg.parts && msg.parts[0].text);
+            // 只有最後一則 AI 訊息才需要渲染操作面板
+            const isLast = (index === chatHistory.length - 1);
+            renderUIFromXML(text, isLast);
+        }
+    });
+    document.getElementById('action-deck').style.display = 'flex';
+}
+
+/* ================= 遊戲核心控制 ================= */
+function checkApiAndProceed(action) {
     if (!apiConfig.key || apiConfig.key.trim() === "") {
         alert("【系統限制】請先輸入並儲存有效的 API Key。"); openApiModal(); return;
     }
-    switchScreen('creation-screen');
-}
-
-function saveApiConfig() {
-    const type = document.getElementById('api-type').value;
-    const key = document.getElementById('api-key').value.trim();
-    if (!key) { alert("API Key 不能為空！"); return; }
-    apiConfig = { type, key };
-    localStorage.setItem('aboApiConfig', JSON.stringify(apiConfig));
-    alert("設定已儲存！"); closeApiModal();
+    if(action === 'new') switchScreen('creation-screen');
 }
 
 function exitGame() {
-    if(confirm("確定要結束當前實相並返回大廳嗎？")) {
+    if(confirm("確定要離開當前實相嗎？未儲存的進度將會遺失。")) {
         document.getElementById('story-container').innerHTML = '';
+        document.getElementById('status-view').innerHTML = '';
         document.getElementById('action-deck').style.display = 'none';
-        chatHistory = [];
-        toggleGameTab('story'); // 復原分頁
+        chatHistory = []; currentSaveName = "";
+        toggleGameTab('story'); 
         switchScreen('lobby-screen');
     }
 }
 
 function initializeGame() {
+    const era = document.getElementById('c-era').value;
+    const setting = document.getElementById('c-setting').value;
     const name = document.getElementById('c-name').value.trim();
     const age = document.getElementById('c-age').value.trim();
     const g1 = document.getElementById('c-gender1').value;
@@ -495,13 +591,12 @@ function initializeGame() {
     const personality = document.getElementById('c-personality').value.trim();
     const bg = document.getElementById('c-background').value.trim() || "無特別背景";
 
-    // 嚴格必填防呆機制
-    if(!name || !age || !g1 || !g2 || !job || !personality) {
-        alert("請完整填寫所有標註 (必填) 的欄位！");
-        return;
+    if(!era || !setting || !name || !age || !g1 || !g2 || !job || !personality) {
+        alert("請完整填寫所有標註 (必填) 的欄位！"); return;
     }
 
     characterProfile = `【玩家角色卡】
+時代背景：${era} | 世界設定：${setting}
 姓名：${name} (年齡: ${age})
 性別：${g1} / ${g2}
 信息素：${pheromone}
@@ -513,16 +608,18 @@ function initializeGame() {
 
 請根據此角色卡，創造一個極具張力、充滿感官細節的長篇開局場景，並嚴格輸出 XML。字數絕對不得低於 1500 字。`;
 
+    currentSaveName = "";
+    document.getElementById('story-container').innerHTML = '';
+    document.getElementById('status-view').innerHTML = '';
     switchScreen('game-screen');
     sendToAI(characterProfile, true);
 }
 
 function submitChoice(choiceText) {
     appendLog(`【你的行動】 ${choiceText}`, 'user');
-    // 送出後自動收起選項面板（如果原本是展開的），並切回實相分頁
     toggleGameTab('story');
     if (!isDeckCollapsed) toggleActionDeck();
-    sendToAI(`玩家選擇了行動：${choiceText}。請嚴格依照 XML 格式推演下一步，維持極致的感官描寫與 1500 字以上的長度。`, false);
+    sendToAI(`玩家選擇了行動：${choiceText}。請嚴格依照 XML 格式推演下一步，維持極致感官描寫與 1500 字以上的長度。`, false);
 }
 
 function submitCustomAction() {
@@ -533,9 +630,9 @@ function submitCustomAction() {
     submitChoice(action);
 }
 
+/* ================= 渲染邏輯 ================= */
 function appendLog(text, type) {
     const container = document.getElementById('story-container');
-    
     if (type === 'user') {
         const div = document.createElement('div');
         div.className = 'story-paragraph';
@@ -551,10 +648,11 @@ function appendLog(text, type) {
             container.appendChild(pDiv);
         });
     }
-    container.scrollTop = container.scrollHeight;
+    // 平滑滾動到底部
+    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
 }
 
-function renderUIFromXML(xmlString) {
+function renderUIFromXML(xmlString, renderOptions = true) {
     const novelMatch = xmlString.match(/<Cinematic_Novel>([\s\S]*?)<\/Cinematic_Novel>/i);
     const statusMatch = xmlString.match(/<Status_Bar>([\s\S]*?)<\/Status_Bar>/i);
     
@@ -562,14 +660,13 @@ function renderUIFromXML(xmlString) {
 
     if (statusMatch) {
         const statusBarData = statusMatch[1].trim().split('\n').filter(l => l.trim() !== '');
-        let statusHtml = `<h3>當前世界動態</h3>`;
+        let statusHtml = `<h3>動態更新</h3>`;
         
         statusBarData.forEach(line => {
             let parts = line.split('：');
             if(parts.length >= 2) {
                 let label = parts[0].trim();
                 let content = parts.slice(1).join('：').trim();
-                
                 if (label.includes('他的心聲')) {
                     statusHtml += `<div class="status-heart">「${content}」</div>`;
                 } else {
@@ -579,47 +676,44 @@ function renderUIFromXML(xmlString) {
                 statusHtml += `<div class="status-item"><span>${line}</span></div>`;
             }
         });
-        document.getElementById('status-card-content').innerHTML = statusHtml;
+        
+        // 建立新卡片並「置頂」於狀態欄
+        const newCard = document.createElement('div');
+        newCard.className = 'status-card';
+        newCard.innerHTML = statusHtml;
+        document.getElementById('status-view').prepend(newCard);
     }
 
-    const optionsContainer = document.getElementById('options-container');
-    optionsContainer.innerHTML = '';
-    const optionRegex = /<Option ID="([A-D])">([\s\S]*?)<\/Option>/gi;
-    let match; let hasOptions = false;
-    while ((match = optionRegex.exec(xmlString)) !== null) {
-        hasOptions = true;
-        const btn = document.createElement('button'); btn.className = 'choice-btn';
-        btn.innerText = `${match[1]}. ${match[2].trim()}`;
-        btn.onclick = () => submitChoice(btn.innerText);
-        optionsContainer.appendChild(btn);
+    if(renderOptions) {
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        const optionRegex = /<Option ID="([A-D])">([\s\S]*?)<\/Option>/gi;
+        let match; let hasOptions = false;
+        while ((match = optionRegex.exec(xmlString)) !== null) {
+            hasOptions = true;
+            const btn = document.createElement('button'); btn.className = 'choice-btn';
+            btn.innerText = `${match[1]}. ${match[2].trim()}`;
+            btn.onclick = () => submitChoice(btn.innerText);
+            optionsContainer.appendChild(btn);
+        }
+        if (!hasOptions) {
+            const btn = document.createElement('button'); btn.className = 'choice-btn';
+            btn.innerText = `繼續推進...`; btn.onclick = () => submitChoice("繼續觀察並推進");
+            optionsContainer.appendChild(btn);
+        }
+        if (isDeckCollapsed) toggleActionDeck();
     }
-    if (!hasOptions) {
-        const btn = document.createElement('button'); btn.className = 'choice-btn';
-        btn.innerText = `繼續推進...`; btn.onclick = () => submitChoice("繼續觀察並推進");
-        optionsContainer.appendChild(btn);
-    }
-    
-    // 生成完畢後，展開選項面板提示玩家
-    if (isDeckCollapsed) toggleActionDeck();
-    
-    document.getElementById('story-container').scrollTop = document.getElementById('story-container').scrollHeight;
 }
 
 async function sendToAI(promptText, isInit = false) {
     document.getElementById('action-deck').style.display = 'none';
-    
-    // 啟動中央半透明遮罩
     document.getElementById('loading-modal').style.display = 'flex';
 
     try {
         let responseText = "";
-
         if (apiConfig.type === 'openai') {
             if (isInit) {
-                chatHistory = [
-                    { role: "system", content: SYSTEM_PROMPT },
-                    { role: "user", content: promptText }
-                ];
+                chatHistory = [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: promptText }];
             } else {
                 chatHistory.push({ role: "user", content: promptText });
             }
@@ -654,17 +748,14 @@ async function sendToAI(promptText, isInit = false) {
         }
 
         responseText = responseText.replace(/```xml\n?/g, '').replace(/```\n?/g, '').trim();
-        
-        // 關閉中央半透明遮罩並顯示面板
         document.getElementById('loading-modal').style.display = 'none';
         document.getElementById('action-deck').style.display = 'flex';
-        
-        renderUIFromXML(responseText);
+        renderUIFromXML(responseText, true);
 
     } catch (error) {
         document.getElementById('loading-modal').style.display = 'none';
         document.getElementById('action-deck').style.display = 'flex';
-        alert("API 呼叫失敗，請檢查 API Key 是否正確或有額度。\n錯誤訊息：" + error.message);
+        alert("API 呼叫失敗，請檢查 API Key 狀態。\n錯誤：" + error.message);
     }
 }
 
