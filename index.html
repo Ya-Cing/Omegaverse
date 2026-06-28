@@ -253,39 +253,49 @@
         }
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-        /* ================= 滿版可折疊選項面板 ================= */
+        /* ================= 滿版可折疊選項面板與右下角縮圖 ================= */
+        /* 右下角懸浮縮圖 (預設隱藏，帶有彈跳放大動畫) */
+        #fab-toggle-deck {
+            position: absolute; bottom: 25px; right: 25px; width: 65px; height: 65px;
+            border-radius: 50%; background: var(--surface-color); border: 2px solid var(--gold-accent);
+            color: var(--gold-accent); box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            z-index: 60; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; font-family: var(--font-main);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 12px; letter-spacing: 0.1em; transform: scale(0); 
+        }
+        #fab-toggle-deck:hover {
+            transform: scale(1.1) !important; background: var(--bg-color);
+            box-shadow: 0 8px 25px rgba(194, 163, 112, 0.4);
+        }
+
+        /* 主面板動畫，使用往下平移隱藏 */
         #action-deck {
             position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface-color);
             display: flex; flex-direction: column;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.6); z-index: 50; transition: transform 0.3s ease;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.6); z-index: 50; 
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
         }
+        /* 當添加 shrunk 類別時，面板往下滑出視窗並透明化 */
+        #action-deck.shrunk {
+            transform: translateY(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .action-deck-header {
-            padding: 15px 10px; text-align: center; color: var(--gold-accent); font-size: 15px;
-            cursor: pointer; background: var(--deck-header-bg); letter-spacing: 0.1em;
-            font-weight: 600; border-top: 1px solid var(--border-color);
-            transition: background 0.3s;
+            padding: 12px 25px; display: flex; justify-content: space-between; align-items: center;
+            background: var(--deck-header-bg); border-top: 1px solid var(--border-color);
         }
-        .action-deck-header:hover { filter: brightness(1.2); }
-        .action-deck-content {
-            padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; 
-            transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease; 
-            overflow: hidden; max-height: 600px; opacity: 1;
-        }
-        .action-deck-content.collapsed { 
-            max-height: 0 !important; 
-            padding-top: 0 !important; 
-            padding-bottom: 0 !important; 
-            opacity: 0; border-top: none;
-        }
+        .action-deck-title { color: var(--gold-accent); font-size: 15px; font-weight: 600; letter-spacing: 0.1em; }
         
-        .choice-btn {
-            background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
-            padding: 16px 20px; text-align: left; border-radius: 4px; cursor: pointer; font-family: var(--font-main); transition: all 0.3s; font-size: 16px; line-height: 1.6;
+        .close-deck-btn {
+            background: transparent; border: 1px solid var(--text-secondary); color: var(--text-secondary);
+            padding: 4px 12px; border-radius: 20px; font-family: var(--font-main); font-size: 13px; cursor: pointer; transition: all 0.3s;
         }
-        .choice-btn:hover { border-color: var(--gold-accent); padding-left: 25px; box-shadow: 0 0 10px rgba(194, 163, 112, 0.2);} 
-        #custom-action-container { display: flex; gap: 15px; margin-top: 10px; }
-        #custom-action-input { flex: 1; font-size: 16px; padding: 15px; }
-        #custom-action-btn { width: 120px; background: var(--accent-color); color: #fff; margin-top:0;}
+        .close-deck-btn:hover { border-color: var(--gold-accent); color: var(--gold-accent); }
+        
+        .action-deck-content { padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; }
 
         /* ================= 狀態欄頁面 ================= */
         #status-view {
@@ -497,9 +507,17 @@
                 <div class="loading-box"><div class="loading-text">世界演算中...</div></div>
             </div>
             <!-- 面板 -->
+            <!-- 新增：右下角懸浮縮圖按鈕 -->
+            <button id="fab-toggle-deck" onclick="toggleActionDeck(false)" style="display: none;">
+                <span style="font-size: 22px; margin-bottom: 2px;">✒️</span>
+                <span>行動</span>
+            </button>
+
             <div id="action-deck" style="display: none;">
-                <!-- 這個 Header 永遠會固定在底部，確保絕對可以點擊展開 -->
-                <div class="action-deck-header" onclick="toggleActionDeck()" id="action-deck-toggle">▼ 收起操作面板</div>
+                <div class="action-deck-header">
+                    <span class="action-deck-title">◆ 命運的分歧點</span>
+                    <button class="close-deck-btn" onclick="toggleActionDeck(true)">▼ 收縮至右下角</button>
+                </div>
                 <div class="action-deck-content" id="action-deck-content">
                     <div class="read-wrapper" style="padding-bottom:0;">
                         <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
@@ -510,7 +528,6 @@
                     </div>
                 </div>
             </div>
-        </div>
 
         <!-- 狀態欄 -->
         <div id="status-view">
@@ -632,11 +649,29 @@ function toggleGameTab(tabName) {
 
 // 面板折疊
 let isDeckCollapsed = false;
-function toggleActionDeck() {
-    const content = document.getElementById('action-deck-content'), toggle = document.getElementById('action-deck-toggle');
-    isDeckCollapsed = !isDeckCollapsed;
-    if (isDeckCollapsed) { content.classList.add('collapsed'); toggle.innerText = '▲ 展開操作面板'; } 
-    else { content.classList.remove('collapsed'); toggle.innerText = '▼ 收起操作面板'; }
+function toggleActionDeck(forceState = null) {
+    const deck = document.getElementById('action-deck');
+    const fab = document.getElementById('fab-toggle-deck');
+    
+    // 允許系統強制指派狀態 (true=收縮, false=展開)
+    if (forceState !== null) isDeckCollapsed = forceState;
+    else isDeckCollapsed = !isDeckCollapsed;
+    
+    if (isDeckCollapsed) {
+        // 1. 面板往下收縮
+        deck.classList.add('shrunk');
+        fab.style.display = 'flex';
+        // 2. 小縮圖按鈕彈跳浮現
+        setTimeout(() => fab.style.transform = 'scale(1)', 10);
+    } else {
+        // 1. 面板往上展開
+        deck.classList.remove('shrunk');
+        fab.style.transform = 'scale(0)';
+        // 2. 等縮圖動畫結束後徹底隱藏
+        setTimeout(() => {
+            if(!isDeckCollapsed) fab.style.display = 'none';
+        }, 300);
+    }
 }
 
 /* ================= 核心 AI 與存檔變數 ================= */
@@ -847,11 +882,13 @@ function initializeGame() {
 }
 
 function submitChoice(choiceText) {
-    // 儲存 DOM 以便演算失敗時能移除
     lastUserLogElement = appendLog(`【你的行動】 ${choiceText}`, 'user');
-    
     toggleGameTab('story');
-    if (!isDeckCollapsed) toggleActionDeck();
+    
+    // 【修改】點擊後，直接將主面板與縮圖都隱藏，等待演算
+    document.getElementById('action-deck').style.display = 'none';
+    document.getElementById('fab-toggle-deck').style.display = 'none';
+    
     sendToAI(`玩家選擇了：${choiceText}。請嚴格依照 XML 格式推演下一步，維持極致感官描寫與 1500 字以上的長度。`, false);
 }
 
@@ -936,7 +973,7 @@ function renderUIFromXML(xmlString, renderOptions = true) {
             btn.innerText = `繼續推進...`; btn.onclick = () => submitChoice("繼續觀察並推進");
             optionsContainer.appendChild(btn);
         }
-        if (isDeckCollapsed) toggleActionDeck();
+        if (isDeckCollapsed) toggleActionDeck(false);;
     }
 }
 
@@ -1007,7 +1044,7 @@ async function sendToAI(promptText, isInit = false) {
         
         // 3. 恢復操作面板的顯示狀態並展開，讓玩家能重試
         document.getElementById('action-deck').style.display = 'flex';
-        if (isDeckCollapsed) toggleActionDeck();
+        toggleActionDeck(false); // 強制展開
         
         alert("API 演算失敗，已恢復上一步操作，請檢查網路或 API 額度。\n錯誤：" + error.message);
     }
