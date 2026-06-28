@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>費洛蒙共鳴｜ABO Cinematic Engine (滿版PC體驗)</title>
+    <title>ABO世界觀｜Omegaverse </title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         /* ================= 預設深色主題變數 ================= */
@@ -52,7 +52,7 @@
 
         /* 滿版容器 */
         #app {
-            width: 100vw; height: 100vh;
+            width: 100vw; height: 90vh;
             position: relative; display: flex;
             flex-direction: column; overflow: hidden;
         }
@@ -87,20 +87,100 @@
         .intro-text { color: var(--gold-accent); font-size: 20px; letter-spacing: 0.5em; z-index: 2; animation: pulseText 2s infinite alternate; text-shadow: 0 0 10px #000;}
         @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; text-shadow: 0 0 15px var(--gold-accent); } }
 
-        /* ================= 裝飾花紋框 ================= */
-        .ornate-box {
-            position: relative; border: 1px solid rgba(194, 163, 112, 0.4);
-            background: var(--surface-color);
-            padding: 50px 40px; border-radius: 4px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            max-width: 600px; width: 100%; margin: 0 auto;
-            transition: background-color 0.5s;
-        }
-        .ornate-box::before, .ornate-box::after {
-            content: ''; position: absolute; width: 40px; height: 40px; border-color: var(--gold-accent); border-style: solid;
-        }
-        .ornate-box::before { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
-        .ornate-box::after { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
+/* ================= 裝飾花紋框 ================= */
+.ornate-box {
+    position: relative;
+    border: 1px solid rgba(194, 163, 112, 0.4);
+    background: var(--surface-color);
+    padding: 50px 40px;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    transition: background-color 0.5s;
+    
+    /* 新增：讓主體框稍等枝葉收縮後，再浮現出背景與陰影 */
+    animation: boxReveal 2.2s ease-out forwards;
+}
+
+.ornate-box::before, .ornate-box::after {
+    content: ''; 
+    position: absolute; 
+    /* 這裡移除了原本固定的寬高，改交由下方動畫的 100% 狀態來決定 */
+    border-color: var(--gold-accent); 
+    border-style: solid;
+}
+
+.ornate-box::before { 
+    top: -2px; 
+    left: -2px; 
+    /* 新增：左上角枝葉收縮動畫 */
+    animation: vineWrapBefore 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.ornate-box::after { 
+    bottom: -2px; 
+    right: -2px; 
+    /* 新增：右下角枝葉收縮動畫 */
+    animation: vineWrapAfter 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* ================= 裝飾花紋框動畫腳本 ================= */
+@keyframes vineWrapBefore {
+    0% {
+        width: 120vw;
+        height: 120vh;
+        border-width: 12px 0 0 12px; /* 初始較粗，像大樹枝 */
+        border-radius: 30% 0 0 0; /* 帶點圓角模擬藤蔓植物 */
+        opacity: 0;
+        transform: translate(-10vw, -10vh); /* 從畫面左上角外側包圍進來 */
+    }
+    20% {
+        opacity: 1;
+    }
+    100% {
+        width: 40px;
+        height: 40px;
+        border-width: 2px 0 0 2px; /* 變回精緻的邊框 */
+        border-radius: 0;
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes vineWrapAfter {
+    0% {
+        width: 120vw;
+        height: 120vh;
+        border-width: 0 12px 12px 0;
+        border-radius: 0 0 30% 0;
+        opacity: 0;
+        transform: translate(10vw, 10vh);
+    }
+    20% {
+        opacity: 1;
+    }
+    100% {
+        width: 40px;
+        height: 40px;
+        border-width: 0 2px 2px 0;
+        border-radius: 0;
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes boxReveal {
+    0%, 40% {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    100% {
+        background: var(--surface-color);
+        border: 1px solid rgba(194, 163, 112, 0.4);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+}
 
         /* ================= 導覽列 ================= */
         .nav-bar {
@@ -240,8 +320,7 @@
 
 <!-- 大廳環境音 (包含跨瀏覽器 MP3 與 OGG 備案) -->
 <audio id="lobby-bgm" loop preload="auto">
-    <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
-    <source src="https://actions.google.com/sounds/v1/science_fiction/dark_ambient_drone.ogg" type="audio/ogg">
+    <source src="周 Outro.mp3" type="audio/mpeg">
 </audio>
 
 <div id="app">
@@ -266,9 +345,9 @@
             <div class="ornate-box">
                 <h1>費洛蒙共鳴</h1>
                 <div class="subtitle">ABO Cinematic Engine</div>
-                <button class="btn" onclick="checkApiAndProceed('new')">創立實相 (New Game)</button>
-                <button class="btn btn-outline" onclick="openLoadModal()">讀取實相 (Load Game)</button>
-                <button class="btn btn-outline" style="border-color: var(--border-color);" onclick="openApiModal()">神經網路設定</button>
+                <button class="btn" onclick="checkApiAndProceed('new')">創立世界 (New Game)</button>
+                <button class="btn btn-outline" onclick="openLoadModal()">讀取存檔 (Load Game)</button>
+                <button class="btn btn-outline" style="border-color: var(--border-color);" onclick="openApiModal()">神經網路設定 (API KEY)</button>
             </div>
         </div>
     </div>
@@ -281,7 +360,7 @@
             <div class="form-group">
                 <label>選擇 AI 引擎</label>
                 <select id="api-type">
-                    <option value="gemini">Google Gemini 1.5 Flash / Pro</option>
+                    <option value="gemini">Google Gemini 3.5 Flash / Pro</option>
                     <option value="openai">OpenAI GPT-4o</option>
                 </select>
             </div>
@@ -297,7 +376,7 @@
     <div id="load-modal" class="modal-overlay">
         <div class="modal-content ornate-box" style="max-height: 80vh; display:flex; flex-direction:column;">
             <button class="close-btn" onclick="closeLoadModal()">×</button>
-            <h2 style="border:none; margin-top:0;">實相記憶庫 (Saves)</h2>
+            <h2 style="border:none; margin-top:0;">存檔記憶區 (Saves)</h2>
             <div id="save-list" style="overflow-y:auto; flex:1; margin-top: 10px;">
                 <!-- 存檔清單生成區 -->
             </div>
@@ -326,6 +405,7 @@
                         <option value="古代">古代</option>
                         <option value="現代">現代</option>
                         <option value="未來科技">未來科技</option>
+                        <option value="隨機生成">隨機生成</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -335,6 +415,7 @@
                         <option value="東方">東方</option>
                         <option value="西方">西方</option>
                         <option value="架空世界">架空世界</option>
+                        <option value="隨機生成">隨機生成</option>
                     </select>
                 </div>
 
@@ -343,7 +424,7 @@
                 
                 <!-- 數字鍵盤優化：使用 inputmode="numeric" 替換 type="number" -->
                 <div class="form-group"><label>年齡<span class="required-mark">(必填)</span></label>
-                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="c-age" placeholder="請輸入純數字年齡 (例如: 25)...">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="c-age" placeholder="請輸入年齡 (建議成年)...">
                 </div>
                 
                 <div class="form-group">
@@ -379,7 +460,7 @@
                 <div class="form-group"><label>性格簡述<span class="required-mark">(必填)</span></label><textarea id="c-personality" rows="3" placeholder="簡述您的性格特徵..."></textarea></div>
                 <div class="form-group"><label>特殊背景或隱疾</label><textarea id="c-background" rows="3" placeholder="例如：腺體受損、患有信息素依賴症..."></textarea></div>
                 
-                <button class="btn" onclick="initializeGame()">生成實相 (Start)</button>
+                <button class="btn" onclick="initializeGame()">生成世界 (Start)</button>
                 <div style="height: 100px;"></div>
             </div>
         </div>
@@ -389,11 +470,11 @@
     <div id="game-screen" class="screen">
         <div class="nav-bar">
             <div class="nav-left">
-                <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存實相</button>
+                <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存記憶</button>
             </div>
             <div class="nav-center">
-                <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">實相閱讀區</button>
-                <button class="nav-tab-btn" id="tab-status" onclick="toggleGameTab('status')">動態履歷</button>
+                <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">世界運行區</button>
+                <button class="nav-tab-btn" id="tab-status" onclick="toggleGameTab('status')">實時狀態欄</button>
             </div>
             <div class="nav-right">
                 <button class="action-text-btn" onclick="exitGame()">離開 ➔</button>
@@ -407,7 +488,7 @@
             </div>
             <!-- 演算中 -->
             <div id="loading-modal">
-                <div class="loading-box"><div class="loading-text">實相極致演算中...</div></div>
+                <div class="loading-box"><div class="loading-text">世界演算中...</div></div>
             </div>
             <!-- 面板 -->
             <div id="action-deck" style="display: none;">
@@ -428,7 +509,7 @@
         <!-- 狀態欄 -->
         <div id="status-view">
             <div class="read-wrapper" id="status-card-wrapper">
-                <!-- 歷史動態卡片將會附加於此 -->
+                <!-- 歷史動態將會附加於此 -->
             </div>
         </div>
     </div>
@@ -588,7 +669,7 @@ function saveGameProgress() {
     if(chatHistory.length === 0) return alert("目前沒有可儲存的進度。");
     const saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
     const defaultName = currentSaveName || new Date().toLocaleString();
-    const saveName = prompt("請為此實相記憶命名：", defaultName);
+    const saveName = prompt("請為本次世界命名：", defaultName);
     if(!saveName) return;
     
     currentSaveName = saveName;
@@ -602,7 +683,7 @@ function saveGameProgress() {
     
     saves.push(newSave);
     localStorage.setItem('aboSaves', JSON.stringify(saves));
-    alert("實相記憶已成功儲存！");
+    alert("世界記憶已成功儲存！");
 }
 
 function renderSaveList() {
@@ -629,7 +710,7 @@ function renderSaveList() {
 
 function deleteSave(id, event) {
     event.stopPropagation();
-    if(!confirm("確定要刪除這筆實相記憶嗎？")) return;
+    if(!confirm("確定要刪除這筆世界記憶嗎？")) return;
     let saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
     saves = saves.filter(s => s.id !== id);
     localStorage.setItem('aboSaves', JSON.stringify(saves));
@@ -637,7 +718,7 @@ function deleteSave(id, event) {
 }
 
 function loadGame(id) {
-    if (!apiConfig.key) return alert("請先在神經網路設定中輸入 API Key 才能讀取實相。");
+    if (!apiConfig.key) return alert("請先在神經網路設定中輸入 API Key 才能讀取存檔。");
     
     const saves = JSON.parse(localStorage.getItem('aboSaves') || '[]');
     const save = saves.find(s => s.id === id);
@@ -656,8 +737,8 @@ function loadGame(id) {
     chatHistory.forEach((msg, index) => {
         if(msg.role === 'user') {
             let text = msg.content || (msg.parts && msg.parts[0].text);
-            if(text && text.includes('玩家選擇了行動：')) {
-                const actionText = text.replace('玩家選擇了行動：', '').split('。')[0];
+            if(text && text.includes('玩家選擇了：')) {
+                const actionText = text.replace('玩家選擇了：', '').split('。')[0];
                 appendLog(`【你的行動】 ${actionText}`, 'user');
             }
         } else {
@@ -687,7 +768,7 @@ function saveApiConfig() {
 }
 
 function exitGame() {
-    if(confirm("確定要離開當前實相嗎？未儲存的進度將會遺失。")) {
+    if(confirm("確定要離開當前世界嗎？未儲存的進度將會遺失。")) {
         document.getElementById('story-inner-wrapper').innerHTML = '';
         document.getElementById('status-card-wrapper').innerHTML = '';
         document.getElementById('action-deck').style.display = 'none';
@@ -744,7 +825,7 @@ function submitChoice(choiceText) {
     
     toggleGameTab('story');
     if (!isDeckCollapsed) toggleActionDeck();
-    sendToAI(`玩家選擇了行動：${choiceText}。請嚴格依照 XML 格式推演下一步，維持極致感官描寫與 1500 字以上的長度。`, false);
+    sendToAI(`玩家選擇了：${choiceText}。請嚴格依照 XML 格式推演下一步，維持極致感官描寫與 1500 字以上的長度。`, false);
 }
 
 function submitCustomAction() {
@@ -788,7 +869,7 @@ function renderUIFromXML(xmlString, renderOptions = true) {
 
     if (statusMatch) {
         const statusBarData = statusMatch[1].trim().split('\n').filter(l => l.trim() !== '');
-        let statusHtml = `<h3>實相動態更新</h3>`;
+        let statusHtml = `<h3>世界動態更新</h3>`;
         
         statusBarData.forEach(line => {
             let parts = line.split('：');
@@ -861,7 +942,7 @@ async function sendToAI(promptText, isInit = false) {
             if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
             else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiConfig.key}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
