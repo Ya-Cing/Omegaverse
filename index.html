@@ -747,6 +747,14 @@ function loadGame(id) {
     characterProfile = save.profile;
     currentSaveName = save.name;
     
+    // ==========================================
+    // 【新增修復機制】移除存檔尾端「沒有獲得 AI 回覆」的玩家動作
+    // 這樣可以強制讓最後一筆紀錄變回 AI 發言，從而正確渲染出 4 個選項
+    while (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+        chatHistory.pop(); 
+    }
+    // ==========================================
+
     closeLoadModal();
     switchScreen('game-screen');
     
@@ -914,7 +922,7 @@ function renderUIFromXML(xmlString, renderOptions = true) {
     if(renderOptions) {
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
-        const optionRegex = /<Option ID="([A-D])">([\s\S]*?)<\/Option>/gi;
+        const optionRegex = /<Option\s+ID=["']?([A-D])["']?>([\s\S]*?)<\/Option>/gi;
         let match; let hasOptions = false;
         while ((match = optionRegex.exec(xmlString)) !== null) {
             hasOptions = true;
