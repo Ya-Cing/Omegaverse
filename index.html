@@ -950,28 +950,33 @@ function renderUIFromXML(xmlString, renderOptions = true) {
     
     if (novelMatch) appendLog(novelMatch[1].trim(), 'ai');
 
-    if (statusMatch) {
+if (statusMatch) {
         const statusBarData = statusMatch[1].trim().split('\n').filter(l => l.trim() !== '');
         let statusHtml = `<h3>世界動態更新</h3>`;
         
         statusBarData.forEach(line => {
-            let parts = line.split('：');
-            if(parts.length >= 2) {
-                let label = parts[0].trim();
-                let content = parts.slice(1).join('：').trim();
+            // 【強化解析】自動相容 AI 可能輸出的全形(：)或半形(:)冒號
+            const match = line.match(/^([^:：]+)[:：](.*)$/);
+            
+            if(match) {
+                let label = match[1].trim();
+                let content = match[2].trim();
                 if (label.includes('他的心聲')) {
                     statusHtml += `<div class="status-heart">「${content}」</div>`;
                 } else {
                     statusHtml += `<div class="status-item"><span class="label">${label}</span><span>${content}</span></div>`;
                 }
             } else {
-                statusHtml += `<div class="status-item"><span>${line}</span></div>`;
+                // 如果 AI 忘記加冒號，還是強行把它印出來避免資訊遺失
+                statusHtml += `<div class="status-item"><span>${line.trim()}</span></div>`;
             }
         });
         
         const newCard = document.createElement('div');
         newCard.className = 'status-card';
         newCard.innerHTML = statusHtml;
+        
+        // 【歷史紀錄保留】使用 prepend 插入，會將「最新的狀態」放在最上面，舊的自動往下擠
         document.getElementById('status-card-wrapper').prepend(newCard);
     }
 
