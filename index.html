@@ -711,7 +711,7 @@ const SYSTEM_PROMPT = `
 4. 隱藏演算：「信息素匹配度」為DM開局暗自設定的隱藏數值，僅從劇情氛圍流露，絕對不可直接寫在狀態欄中。
 5. 禁止OOC及所有系統文字。
 
-【強制輸出格式】(嚴格遵守 XML，不要加入其他對話)：
+【強制輸出格式】(你每一次的回覆都「必須」且「只能」包含以下三個 XML 標籤，絕對不准省略任何一個)：
 <Cinematic_Novel>
 (在這裡撰寫超過 1500 字的極致小說正文，嚴格遵守單一鏡頭換行法則)
 </Cinematic_Novel>
@@ -729,14 +729,14 @@ const SYSTEM_PROMPT = `
 時間： [yyyy/mm/dd 24hr]
 當前姿勢： [具體姿勢描寫]
 性慾指數： [0-100%]
-信任值： [0-100%，影響是否卸下防備]
-佔慾值： [0-100%，針對Alpha/Enigma]
-依賴值： [0-100%，針對Omega]
+信任值： [0-100%]
+佔有慾： [0-100%，針對Alpha/Enigma]
+依賴性： [0-100%，針對Omega]
 關係流轉： [簡述羈絆]
 他的心聲： [20字內，展露真實波瀾]
 </Status_Bar>
 `;
-
+    
 /* ================= 存檔系統 ================= */
 function saveGameProgress() {
     if(chatHistory.length === 0) return alert("目前沒有可儲存的進度。");
@@ -946,29 +946,34 @@ function appendLog(text, type) {
 
 function renderUIFromXML(xmlString, renderOptions = true) {
     const novelMatch = xmlString.match(/<Cinematic_Novel>([\s\S]*?)<\/Cinematic_Novel>/i);
-    const statusMatch = xmlString.match(/<Status_Bar>([\s\S]*?)<\/Status_Bar>/i);
+    // 【修改】終極防呆正則：容忍 AI 忘記打底線 (<StatusBar>)、或輸出被字數上限截斷而缺少結尾標籤
+    const statusMatch = xmlString.match(/<Status_?Bar[^>]*>([\s\S]*?)(?:<\/Status_?Bar>|$)/i);
     
     if (novelMatch) appendLog(novelMatch[1].trim(), 'ai');
 
-if (statusMatch) {
+    if (statusMatch) {
         const statusBarData = statusMatch[1].trim().split('\n').filter(l => l.trim() !== '');
         let statusHtml = `<h3>世界動態更新</h3>`;
         
         statusBarData.forEach(line => {
-            // 【強化解析】自動相容 AI 可能輸出的全形(：)或半形(:)冒號
-            const match = line.match(/^([^:：]+)[:：](.*)$/);
+            // 【強化解析】自動過濾 AI 雞婆加上的 Markdown 星號 (**)、清單符號 (-) 與多餘空白
+            let cleanLine = line.replace(/[\*\-#`]/g, '').trim(); 
+            // 支援全形(：)與半形(:)冒號
+            const match = cleanLine.match(/^([^:：]+)[:：](.*)$/);
             
             if(match) {
                 let label = match[1].trim();
                 let content = match[2].trim();
-                if (label.includes('他的心聲')) {
+                // 只要標籤包含「心聲」兩個字就套用特殊樣式
+                if (label.includes('心聲')) {
                     statusHtml += `<div class="status-heart">「${content}」</div>`;
                 } else {
                     statusHtml += `<div class="status-item"><span class="label">${label}</span><span>${content}</span></div>`;
                 }
             } else {
-                // 如果 AI 忘記加冒號，還是強行把它印出來避免資訊遺失
-                statusHtml += `<div class="status-item"><span>${line.trim()}</span></div>`;
+                if (cleanLine.length > 0) {
+                    statusHtml += `<div class="status-item"><span>${cleanLine}</span></div>`;
+                }
             }
         });
         
@@ -976,7 +981,7 @@ if (statusMatch) {
         newCard.className = 'status-card';
         newCard.innerHTML = statusHtml;
         
-        // 【歷史紀錄保留】使用 prepend 插入，會將「最新的狀態」放在最上面，舊的自動往下擠
+        // 使用 prepend 確保「最新狀態」會堆疊在最上面，歷史狀態會往下推
         document.getElementById('status-card-wrapper').prepend(newCard);
     }
 
