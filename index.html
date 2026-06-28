@@ -52,7 +52,7 @@
 
         /* 滿版容器 */
         #app {
-            width: 100vw; height: 90vh;
+            width: 100vw; height: 100vh;
             position: relative; display: flex;
             flex-direction: column; overflow: hidden;
         }
@@ -320,7 +320,8 @@
 
 <!-- 大廳環境音 (包含跨瀏覽器 MP3 與 OGG 備案) -->
 <audio id="lobby-bgm" loop preload="auto">
-    <source src="周 Outro.mp3" type="audio/mpeg">
+    <source src="周深 - 周 Outro.mp3" type="audio/mpeg">
+    <source src="周深 - 周 Outro.ogg" type="audio/mpeg">
 </audio>
 
 <div id="app">
@@ -328,7 +329,7 @@
     <!-- 0. 銀河開場 -->
     <div id="intro-screen" class="screen active" onclick="enterLobby()">
         <div id="galaxy-container"></div>
-        <div class="intro-text">觸碰螢幕以進入實相</div>
+        <div class="intro-text">觸碰螢幕以進入世界</div>
     </div>
 
     <!-- 1. 起始大廳 -->
