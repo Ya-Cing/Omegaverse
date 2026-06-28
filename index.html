@@ -176,21 +176,27 @@
         /* ================= 滿版可折疊選項面板 ================= */
         #action-deck {
             position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface-color);
-            border-top: 1px solid var(--border-color); display: flex; flex-direction: column;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5); z-index: 50; transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.6); z-index: 50; transition: transform 0.3s ease;
         }
-        /* 保證收起時有可點擊的區域 */
         .action-deck-header {
-            padding: 12px 10px; text-align: center; color: var(--gold-accent); font-size: 14px;
+            padding: 15px 10px; text-align: center; color: var(--gold-accent); font-size: 15px;
             cursor: pointer; background: var(--deck-header-bg); letter-spacing: 0.1em;
-            font-weight: 600; border-bottom: 1px solid var(--border-color);
+            font-weight: 600; border-top: 1px solid var(--border-color);
+            transition: background 0.3s;
         }
         .action-deck-header:hover { filter: brightness(1.2); }
         .action-deck-content {
             padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; 
-            transition: max-height 0.3s ease, padding 0.3s ease; overflow: hidden; max-height: 500px; 
+            transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease; 
+            overflow: hidden; max-height: 600px; opacity: 1;
         }
-        .action-deck-content.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; border-top: none; }
+        .action-deck-content.collapsed { 
+            max-height: 0 !important; 
+            padding-top: 0 !important; 
+            padding-bottom: 0 !important; 
+            opacity: 0; border-top: none;
+        }
         
         .choice-btn {
             background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
@@ -232,8 +238,9 @@
 </head>
 <body>
 
-<!-- 大廳環境音 (Google 暗黑科幻環境音) -->
+<!-- 大廳環境音 (包含跨瀏覽器 MP3 與 OGG 備案) -->
 <audio id="lobby-bgm" loop preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
     <source src="https://actions.google.com/sounds/v1/science_fiction/dark_ambient_drone.ogg" type="audio/ogg">
 </audio>
 
@@ -242,7 +249,7 @@
     <!-- 0. 銀河開場 -->
     <div id="intro-screen" class="screen active" onclick="enterLobby()">
         <div id="galaxy-container"></div>
-        <div class="intro-text">點擊螢幕以進入實相</div>
+        <div class="intro-text">觸碰螢幕以進入實相</div>
     </div>
 
     <!-- 1. 起始大廳 -->
@@ -252,7 +259,7 @@
                 <button class="action-text-btn" onclick="toggleTheme()" id="theme-toggle-btn">☀️ 淺色模式</button>
             </div>
             <div class="nav-right">
-                <button class="action-text-btn" onclick="toggleBGM()" id="bgm-toggle-btn">🎵 音樂：ON</button>
+                <button class="action-text-btn" onclick="toggleBGM()" id="bgm-toggle-btn">🎵 音樂：OFF</button>
             </div>
         </div>
         <div class="content-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -274,8 +281,7 @@
             <div class="form-group">
                 <label>選擇 AI 引擎</label>
                 <select id="api-type">
-                    <!-- 修正為官方正式型號，確保不會404報錯 -->
-                    <option value="gemini">Google Gemini 3.5 Flash / Pro</option>
+                    <option value="gemini">Google Gemini 1.5 Flash / Pro</option>
                     <option value="openai">OpenAI GPT-4o</option>
                 </select>
             </div>
@@ -305,7 +311,7 @@
                 <button class="action-text-btn" onclick="switchScreen('lobby-screen')">← 返回大廳</button>
             </div>
             <div class="nav-right">
-                <button class="action-text-btn" onclick="toggleTheme()">☀️/🌙</button>
+                <button class="action-text-btn" onclick="toggleTheme()" id="theme-toggle-btn-2">☀️ 淺色模式</button>
             </div>
         </div>
         <div class="content-area">
@@ -334,7 +340,12 @@
 
                 <h2>【基本資料】</h2>
                 <div class="form-group"><label>姓名<span class="required-mark">(必填)</span></label><input type="text" id="c-name" placeholder="請輸入姓名..."></div>
-                <div class="form-group"><label>年齡<span class="required-mark">(必填)</span></label><input type="number" id="c-age" placeholder="請輸入數字..." min="1"></div>
+                
+                <!-- 數字鍵盤優化：使用 inputmode="numeric" 替換 type="number" -->
+                <div class="form-group"><label>年齡<span class="required-mark">(必填)</span></label>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="c-age" placeholder="請輸入純數字年齡 (例如: 25)...">
+                </div>
+                
                 <div class="form-group">
                     <label>第一性別<span class="required-mark">(必填)</span></label>
                     <select id="c-gender1">
@@ -379,7 +390,6 @@
         <div class="nav-bar">
             <div class="nav-left">
                 <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存實相</button>
-                <button class="action-text-btn" onclick="toggleTheme()">☀️/🌙</button>
             </div>
             <div class="nav-center">
                 <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">實相閱讀區</button>
@@ -401,6 +411,7 @@
             </div>
             <!-- 面板 -->
             <div id="action-deck" style="display: none;">
+                <!-- 這個 Header 永遠會固定在底部，確保絕對可以點擊展開 -->
                 <div class="action-deck-header" onclick="toggleActionDeck()" id="action-deck-toggle">▼ 收起操作面板</div>
                 <div class="action-deck-content" id="action-deck-content">
                     <div class="read-wrapper" style="padding-bottom:0;">
@@ -432,26 +443,31 @@ const bgm = document.getElementById('lobby-bgm');
 function toggleTheme() {
     const body = document.body;
     isLightMode = !isLightMode;
-    if(isLightMode) {
-        body.classList.add('light-mode');
-        document.getElementById('theme-toggle-btn').innerText = '🌙 深色模式';
-    } else {
-        body.classList.remove('light-mode');
-        document.getElementById('theme-toggle-btn').innerText = '☀️ 淺色模式';
-    }
+    const btnText = isLightMode ? '🌙 深色模式' : '☀️ 淺色模式';
+    
+    if(isLightMode) body.classList.add('light-mode');
+    else body.classList.remove('light-mode');
+    
+    document.getElementById('theme-toggle-btn').innerText = btnText;
+    document.getElementById('theme-toggle-btn-2').innerText = btnText;
     localStorage.setItem('aboTheme', isLightMode ? 'light' : 'dark');
 }
 
-function toggleBGM() {
+async function toggleBGM() {
     if(isBgmPlaying) {
         bgm.pause();
         isBgmPlaying = false;
         document.getElementById('bgm-toggle-btn').innerText = '🎵 音樂：OFF';
     } else {
         bgm.volume = 0.5;
-        bgm.play().catch(e => console.log("播放被阻擋", e));
-        isBgmPlaying = true;
-        document.getElementById('bgm-toggle-btn').innerText = '🎵 音樂：ON';
+        try {
+            await bgm.play();
+            isBgmPlaying = true;
+            document.getElementById('bgm-toggle-btn').innerText = '🎵 音樂：ON';
+        } catch(e) {
+            console.warn("音樂播放被阻擋，可能需要您手動點擊按鈕重試。", e);
+            document.getElementById('bgm-toggle-btn').innerText = '🎵 播放失敗 (點此重試)';
+        }
     }
 }
 
@@ -469,10 +485,10 @@ function createGalaxy() {
     }
 }
 
-// 使用者點擊銀河後觸發 (解決自動播放限制)
+// 使用者點擊銀河後觸發 (解決瀏覽器自動播放限制)
 function enterLobby() { 
     switchScreen('lobby-screen'); 
-    if(!isBgmPlaying) toggleBGM(); // 啟動音樂
+    if(!isBgmPlaying) toggleBGM(); 
 }
 
 function switchScreen(screenId) {
@@ -481,10 +497,7 @@ function switchScreen(screenId) {
 }
 function openApiModal() { document.getElementById('api-modal').classList.add('active'); }
 function closeApiModal() { document.getElementById('api-modal').classList.remove('active'); }
-function openLoadModal() { 
-    renderSaveList(); 
-    document.getElementById('load-modal').classList.add('active'); 
-}
+function openLoadModal() { renderSaveList(); document.getElementById('load-modal').classList.add('active'); }
 function closeLoadModal() { document.getElementById('load-modal').classList.remove('active'); }
 
 // 角色卡邏輯：動態防呆與信息素隱藏
@@ -531,6 +544,7 @@ let apiConfig = { type: 'gemini', key: '' };
 let chatHistory = [];
 let characterProfile = "";
 let currentSaveName = "";
+let lastUserLogElement = null; // 用於追蹤演算失敗時要移除的玩家對話
 
 /* ================= 系統提示詞設定 ================= */
 const SYSTEM_PROMPT = `
@@ -725,7 +739,9 @@ function initializeGame() {
 }
 
 function submitChoice(choiceText) {
-    appendLog(`【你的行動】 ${choiceText}`, 'user');
+    // 儲存 DOM 以便演算失敗時能移除
+    lastUserLogElement = appendLog(`【你的行動】 ${choiceText}`, 'user');
+    
     toggleGameTab('story');
     if (!isDeckCollapsed) toggleActionDeck();
     sendToAI(`玩家選擇了行動：${choiceText}。請嚴格依照 XML 格式推演下一步，維持極致感官描寫與 1500 字以上的長度。`, false);
@@ -751,6 +767,8 @@ function appendLog(text, type) {
         div.style.textAlign = 'right'; div.style.borderRight = '4px solid var(--gold-accent)';
         div.style.paddingRight = '15px'; div.innerText = text; 
         container.appendChild(div);
+        setTimeout(() => { scrollArea.scrollTop = scrollArea.scrollHeight; }, 150);
+        return div; // 回傳 DOM，方便出錯時移除
     } else {
         const paragraphs = text.split('\n').filter(p => p.trim() !== '');
         paragraphs.forEach(p => {
@@ -758,8 +776,8 @@ function appendLog(text, type) {
             pDiv.className = 'story-paragraph'; pDiv.innerText = p.trim(); 
             container.appendChild(pDiv);
         });
+        setTimeout(() => { scrollArea.scrollTop = scrollArea.scrollHeight; }, 150);
     }
-    setTimeout(() => { scrollArea.scrollTop = scrollArea.scrollHeight; }, 150);
 }
 
 function renderUIFromXML(xmlString, renderOptions = true) {
@@ -817,6 +835,9 @@ function renderUIFromXML(xmlString, renderOptions = true) {
 async function sendToAI(promptText, isInit = false) {
     document.getElementById('action-deck').style.display = 'none';
     document.getElementById('loading-modal').style.display = 'flex';
+    
+    // 記錄發送前的對話長度，作為出錯回溯的依據
+    const originalHistoryLength = chatHistory.length;
 
     try {
         let responseText = "";
@@ -840,7 +861,7 @@ async function sendToAI(promptText, isInit = false) {
             if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
             else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -862,9 +883,25 @@ async function sendToAI(promptText, isInit = false) {
         renderUIFromXML(responseText, true);
 
     } catch (error) {
+        // === 演算失敗的防呆與回溯機制 ===
         document.getElementById('loading-modal').style.display = 'none';
+        
+        // 1. 移除畫面上剛剛產生的玩家點擊紀錄
+        if (lastUserLogElement) {
+            lastUserLogElement.remove();
+            lastUserLogElement = null;
+        }
+        
+        // 2. 將未成功發送的 prompt 從紀錄中剔除，避免污染下一次的對話
+        if (!isInit && chatHistory.length > originalHistoryLength) {
+            chatHistory.pop();
+        }
+        
+        // 3. 恢復操作面板的顯示狀態並展開，讓玩家能重試
         document.getElementById('action-deck').style.display = 'flex';
-        alert("API 呼叫失敗，請檢查 API Key 狀態。\n錯誤：" + error.message);
+        if (isDeckCollapsed) toggleActionDeck();
+        
+        alert("API 演算失敗，已恢復上一步操作，請檢查網路或 API 額度。\n錯誤：" + error.message);
     }
 }
 
