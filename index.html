@@ -256,16 +256,22 @@
         /* ================= 滿版可折疊選項面板與右下角縮圖 ================= */
         /* 右下角懸浮縮圖 (預設隱藏，帶有彈跳放大動畫) */
         #fab-toggle-deck {
-            position: absolute; bottom: 25px; right: 25px; width: 65px; height: 65px;
+            position: absolute; 
+            bottom: 100px; /* 【修改】將位置大幅往上移動，避免被手機底部導覽列或邊緣擋住 */
+            right: 30px; 
+            width: 70px; height: 70px; /* 微調放大按鈕，讓字體有呼吸空間 */
             border-radius: 50%; background: var(--surface-color); border: 2px solid var(--gold-accent);
             color: var(--gold-accent); box-shadow: 0 5px 20px rgba(0,0,0,0.6);
             z-index: 60; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; font-family: var(--font-main);
+            align-items: center; justify-content: center; 
+            font-family: var(--font-main); /* 【確保】維持源雲明體 */
+            font-weight: 600; /* 【新增】加粗文字，使其與原先介面的樣式視覺重量一致 */
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-size: 12px; letter-spacing: 0.1em; transform: scale(0); 
+            font-size: 12px; /* 【新增】將字體放大到 12px */
+            letter-spacing: 0.1em; transform: scale(0); 
         }
         #fab-toggle-deck:hover {
-            transform: scale(1.1) !important; background: var(--bg-color);
+            transform: scale(1.08) !important; background: var(--bg-color);
             box-shadow: 0 8px 25px rgba(194, 163, 112, 0.4);
         }
 
@@ -296,6 +302,14 @@
         .close-deck-btn:hover { border-color: var(--gold-accent); color: var(--gold-accent); }
         
         .action-deck-content { padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; }
+        .choice-btn {
+            background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
+            padding: 16px 20px; text-align: left; border-radius: 4px; cursor: pointer; font-family: var(--font-main); transition: all 0.3s; font-size: 16px; line-height: 1.6;
+        }
+        .choice-btn:hover { border-color: var(--gold-accent); padding-left: 25px; box-shadow: 0 0 10px rgba(194, 163, 112, 0.2);} 
+        #custom-action-container { display: flex; gap: 15px; margin-top: 10px; }
+        #custom-action-input { flex: 1; font-size: 16px; padding: 15px; }
+        #custom-action-btn { width: 120px; background: var(--accent-color); color: #fff; margin-top:0;}
 
         /* ================= 狀態欄頁面 ================= */
         #status-view {
@@ -482,6 +496,8 @@
         <div class="nav-bar">
             <div class="nav-left">
                 <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存記憶</button>
+                <!-- 新增：世界運行區的切換顏色模式按鈕 -->
+                <button class="action-text-btn" onclick="toggleTheme()" id="theme-toggle-btn-3">☀️ 淺色模式</button>
             </div>
             <div class="nav-center">
                 <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">世界運行區</button>
@@ -554,6 +570,9 @@ function toggleTheme() {
     
     document.getElementById('theme-toggle-btn').innerText = btnText;
     document.getElementById('theme-toggle-btn-2').innerText = btnText;
+    // 【新增】同步更新世界運行區內的按鈕文字
+    document.getElementById('theme-toggle-btn-3').innerText = btnText; 
+    
     localStorage.setItem('aboTheme', isLightMode ? 'light' : 'dark');
 }
 
