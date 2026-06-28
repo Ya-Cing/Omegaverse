@@ -932,48 +932,9 @@ function renderUIFromXML(xmlString, renderOptions = true) {
     }
 }
 
-/* ================= 💎 新增：具備「自動重試」與「自動降級」的 Gemini Fetch 函式 ================= */
-async function fetchGeminiWithRetry(requestBody, apiKey, retries = 3, delay = 1000, model = 'gemini-3.5-pro') {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-    });
-
-    // 攔截塞車錯誤 503 或限流錯誤 429
-    if (response.status === 503 || response.status === 429) {
-        if (retries > 0) {
-            const nextDelay = delay * 2 + Math.random() * 200; // 指數退避 + 隨機抖動
-            console.warn(`[Gemini API] 伺服器高負載 (${response.status})，${Math.round(nextDelay)}ms 後重試... (剩餘次數: ${retries})`);
-            
-            // 更新畫面上的提示文字讓玩家知道在重試
-            document.getElementById('loading-text').innerText = `伺服器壅塞，自動排隊重試中... (剩餘 ${retries} 次)`;
-            
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return await fetchGeminiWithRetry(requestBody, apiKey, retries - 1, nextDelay, model);
-            
-        } else if (model !== 'gemini-3.5-flash') {
-            // 重試次數耗盡，自動降級到更順暢的 Flash 模型
-            console.warn("[Gemini API] Pro 模型持續滿載，正在降級至 Flash 備援模型...");
-            document.getElementById('loading-text').innerText = `自動切換至備援神經網路...`;
-            return await fetchGeminiWithRetry(requestBody, apiKey, 2, 1000, 'gemini-3.5-flash');
-        }
-    }
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `API 回傳錯誤: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
 async function sendToAI(promptText, isInit = false) {
     document.getElementById('action-deck').style.display = 'none';
     document.getElementById('loading-modal').style.display = 'flex';
-    document.getElementById('loading-text').innerText = '世界演算中...'; // 每次發送先重置文字
     
     // 記錄發送前的對話長度，作為出錯回溯的依據
     const originalHistoryLength = chatHistory.length;
@@ -1000,16 +961,17 @@ async function sendToAI(promptText, isInit = false) {
             if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
             else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
 
-            // 準備 Request Body
-            const requestBody = {
-                systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-                contents: chatHistory,
-                generationConfig: { temperature: 0.7 }
-            };
-
-            // 💎 使用我們新寫好的「重試與降級防禦函數」代替原本直接 fetch
-            const data = await fetchGeminiWithRetry(requestBody, apiConfig.key);
-            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                    contents: chatHistory,
+                    generationConfig: { temperature: 0.7 }
+                })
+            });
+            const data = await res.json();
             if(data.error) throw new Error(data.error.message);
             responseText = data.candidates[0].content.parts[0].text;
             chatHistory.push({ role: "model", parts: [{ text: responseText }] });
@@ -1042,6 +1004,7 @@ async function sendToAI(promptText, isInit = false) {
         alert("API 演算失敗，已恢復上一步操作，請檢查網路或 API 額度。\n錯誤：" + error.message);
     }
 }
+
 window.onload = () => {
     createGalaxy();
     
