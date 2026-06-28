@@ -439,7 +439,6 @@
                         <option value="" disabled selected>請選擇...</option>
                         <option value="東方">東方</option>
                         <option value="西方">西方</option>
-                        <option value="架空世界">架空世界</option>
                         <option value="隨機生成">隨機生成</option>
                     </select>
                 </div>
@@ -545,14 +544,17 @@
                 </div>
             </div>
 
-        <!-- 狀態欄 -->
+</div> <!-- 【修改】這裡是結束 game-view 的標籤，把它移到狀態欄上面 -->
+
+        <!-- 狀態欄 (移到 game-view 外面，這樣切換分頁時才不會被跟著隱藏) -->
         <div id="status-view">
             <div class="read-wrapper" id="status-card-wrapper">
                 <!-- 歷史動態將會附加於此 -->
             </div>
         </div>
-    </div>
-</div>
+        
+    </div> <!-- 結束 game-screen -->
+</div> <!-- 結束 app -->
 
 <script>
 /* ================= 主題與音樂邏輯 ================= */
@@ -891,8 +893,8 @@ function initializeGame() {
 性格：${personality}
 特殊背景：${bg}
 
-請根據此角色卡，創造一個極具張力、充滿感官細節的長篇開局場景，並嚴格輸出 XML。字數絕對不得低於 1500 字。`;
-
+請根據此角色卡，創造一個極具張力、充滿感官細節的長篇開局場景，並嚴格輸出 XML。字數絕對不得低於 1500 字。並且「必須」輸出 <Cinematic_Novel>, <Player_Choices> 與 <Status_Bar> 三個完整的 XML 區塊，絕不可遺漏任何一個。`;
+    
     currentSaveName = "";
     document.getElementById('story-inner-wrapper').innerHTML = '';
     document.getElementById('status-card-wrapper').innerHTML = '';
@@ -904,11 +906,12 @@ function submitChoice(choiceText) {
     lastUserLogElement = appendLog(`【你的行動】 ${choiceText}`, 'user');
     toggleGameTab('story');
     
-    // 【修改】點擊後，直接將主面板與縮圖都隱藏，等待演算
+    // 點擊後，直接將主面板與縮圖都隱藏，等待演算
     document.getElementById('action-deck').style.display = 'none';
     document.getElementById('fab-toggle-deck').style.display = 'none';
     
-    sendToAI(`玩家選擇了：${choiceText}。請嚴格依照 XML 格式推演下一步，維持極致感官描寫與 1500 字以上的長度。`, false);
+    // 【修改】在玩家動作後方補上強硬的格式要求
+    sendToAI(`玩家選擇了：${choiceText}。請推演下一步，維持極致感官描寫與 1500 字以上的長度，並且「必須」輸出 <Cinematic_Novel>, <Player_Choices> 與 <Status_Bar> 三個 XML 區塊。`, false);
 }
 
 function submitCustomAction() {
