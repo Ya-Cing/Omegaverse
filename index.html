@@ -339,7 +339,7 @@
                 <button class="action-text-btn" onclick="toggleTheme()" id="theme-toggle-btn">☀️ 淺色模式</button>
             </div>
             <div class="nav-right">
-                <button class="action-text-btn" onclick="toggleBGM()" id="bgm-toggle-btn">🎵 音樂：OFF</button>
+                <button class="action-text-btn bgm-toggle-btn" onclick="toggleBGM()">🎵 音樂：OFF</button>
             </div>
         </div>
         <div class="content-area" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -477,7 +477,12 @@
                 <button class="nav-tab-btn active" id="tab-story" onclick="toggleGameTab('story')">世界運行區</button>
                 <button class="nav-tab-btn" id="tab-status" onclick="toggleGameTab('status')">實時狀態欄</button>
             </div>
-            <div class="nav-right">
+            <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                     <button class="action-text-btn bgm-toggle-btn" onclick="toggleBGM()">🎵 音樂：OFF</button>
+                     <input type="range" id="bgm-volume" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)" style="width: 80px; accent-color: var(--gold-accent); cursor: pointer;" title="調整音量">
+                </div>
+    
                 <button class="action-text-btn" onclick="exitGame()">離開 ➔</button>
             </div>
         </div>
@@ -536,23 +541,36 @@ function toggleTheme() {
 }
 
 async function toggleBGM() {
+    // 抓取畫面上所有的音樂開關按鈕 (大廳 + 遊戲內)
+    const btns = document.querySelectorAll('.bgm-toggle-btn'); 
+    
     if(isBgmPlaying) {
         bgm.pause();
         isBgmPlaying = false;
-        document.getElementById('bgm-toggle-btn').innerText = '🎵 音樂：OFF';
+        btns.forEach(btn => btn.innerText = '🎵 音樂：OFF');
     } else {
-        bgm.volume = 0.5;
+        // 播放時，讀取當前拉桿的音量數值，若找不到拉桿則預設 0.5
+        const volSlider = document.getElementById('bgm-volume');
+        bgm.volume = volSlider ? volSlider.value : 0.5; 
+        
         try {
             await bgm.play();
             isBgmPlaying = true;
-            document.getElementById('bgm-toggle-btn').innerText = '🎵 音樂：ON';
+            btns.forEach(btn => btn.innerText = '🎵 音樂：ON');
         } catch(e) {
             console.warn("音樂播放被阻擋，可能需要您手動點擊按鈕重試。", e);
-            document.getElementById('bgm-toggle-btn').innerText = '🎵 播放失敗 (點此重試)';
+            btns.forEach(btn => btn.innerText = '🎵 播放失敗 (點此重試)');
         }
     }
 }
 
+// 新增：即時調整音量函數
+function changeVolume(val) {
+    if (bgm) {
+        bgm.volume = val;
+    }
+}
+    
 function createGalaxy() {
     const container = document.getElementById('galaxy-container');
     for (let i = 0; i < 200; i++) {
