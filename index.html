@@ -508,7 +508,7 @@
             <div class="nav-left">
                 <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存記憶</button>
                 <!-- 【新增】記憶打包按鈕 -->
-                <button class="action-text-btn" id="btn-compress" onclick="compressMemory()" title="將過去歷史打包成摘要，開啟新篇章">📦 記憶打包</button>
+                <button class="action-text-btn" id="btn-compress" onclick="compressMemory()" title="將過去歷史濃縮成摘要，開啟新篇章">📦 記憶精煉</button>
                 <button class="action-text-btn" onclick="toggleTheme()" id="theme-toggle-btn-3">☀️ 淺色模式</button>
             </div>
             <div class="nav-center">
@@ -726,7 +726,7 @@ const SYSTEM_PROMPT = `
 【敘事品質絕對要求】
 1. 回覆長度與推進：每次回覆約 600~1000 字，必須有「實質的劇情進展」，絕對不可重複上一段場景，必須極其詳細地擴寫每一個動作、眼神交會、心理拉扯。
 2. 沉浸與感官：必須充滿極致的感官描寫（氣味、呼吸、體溫）。
-3. 角色與多樣性：每一次登場的NPC人名請盡量不要重複。NPC不准無腦倒貼。
+3. 角色與多樣性：每一次登場的NPC人名請不要重複，同時符合玩家給出的主題及時空。NPC不准無腦倒貼。
 4. 隱藏演算：「信息素匹配度」為隱藏數值，僅從劇情氛圍流露。
 5. 禁止OOC及所有系統文字。
 
@@ -1196,7 +1196,7 @@ async function sendToAI(promptText, isInit = false) {
             reminderDiv.style.borderTop = '1px dashed var(--border-color)';
             reminderDiv.style.paddingTop = '20px';
             reminderDiv.style.marginTop = '40px';
-            reminderDiv.innerText = "✦ 世界意志提示：記憶軌跡已深，為避免忘卻舊有細節，建議點選左上角「📦 記憶打包」精煉羈絆。 ✦";
+            reminderDiv.innerText = "✦ 世界意志提示：記憶軌跡已深，建議點選左上角「📦 記憶精煉」。 ✦";
             
             container.appendChild(reminderDiv);
             const scrollArea = document.getElementById('story-container');
@@ -1225,8 +1225,8 @@ async function sendToAI(promptText, isInit = false) {
 
 /* ================= 記憶打包與新篇章系統 ================= */
 async function compressMemory() {
-    if (chatHistory.length < 8) return alert("記憶軌跡尚淺，目前還不需要打包喔！");
-    if (!confirm("即將進行「記憶打包」：系統會將至今的劇情濃縮為【前情提要】，並將當前狀態與時間點搬移至新篇章。\n\n這將大幅提升 AI 的長期記憶力並解除卡頓。確定執行？")) return;
+    if (chatHistory.length < 8) return alert("記憶軌跡尚淺，尚未開啟功能");
+    if (!confirm("即將進行「記憶精煉」：系統會將至今的劇情濃縮為【前情提要】，並將當前狀態與時間點搬移至新篇章。\n確定執行？")) return;
 
     document.getElementById('loading-modal').style.display = 'flex';
     const loadingText = document.querySelector('.loading-text');
@@ -1245,11 +1245,12 @@ async function compressMemory() {
         });
 
         // 2. 請 AI 寫摘要
-        const summaryPrompt = `請將以下累積的劇情摘要成約 500~800 字的故事大綱（前情提要）。
+        const summaryPrompt = `請將以下累積的劇情摘要成約 800~1000 字的故事大綱（前情提要）。
 必須包含：
 1. 雙方目前的關係階段與情感狀態（包含信息素的交融程度）。
 2. 發生過的關鍵事件與轉折。
 3. 角色目前的生理與心理狀態。
+4. 主要角色的人物設定。
 請用第三人稱客觀寫作，語氣要符合史詩小說的旁白，不要有任何 XML 標籤。
 
 【歷史劇情】：
