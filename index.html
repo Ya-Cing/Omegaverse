@@ -1334,7 +1334,52 @@ ${fullStory.substring(fullStory.length - 15000)}`;
     }
 }
     
-window.onload = () => {
+/* ================= 初始化與事件綁定 ================= */
+// 【修復關鍵】：改用 DOMContentLoaded，不讓找不到的音樂檔案卡住星辰動畫與遊戲初始化
+document.addEventListener('DOMContentLoaded', () => {
+    createGalaxy();
+    
+    // 讀取主題偏好 (加入防呆保護，避免按鈕尚未生成時報錯)
+    const savedTheme = localStorage.getItem('aboTheme');
+    if(savedTheme === 'light') {
+        isLightMode = true;
+        document.body.classList.add('light-mode');
+        const btn1 = document.getElementById('theme-toggle-btn');
+        const btn2 = document.getElementById('theme-toggle-btn-2');
+        const btn3 = document.getElementById('theme-toggle-btn-3');
+        if (btn1) btn1.innerText = '🌙 深色模式';
+        if (btn2) btn2.innerText = '🌙 深色模式';
+        if (btn3) btn3.innerText = '🌙 深色模式';
+    }
+    
+    const saved = localStorage.getItem('aboApiConfig');
+    if (saved) {
+        apiConfig = JSON.parse(saved);
+        if (apiConfig.type === 'gemini') document.getElementById('api-type').value = 'gemini';
+        else document.getElementById('api-type').value = apiConfig.type;
+        document.getElementById('api-key').value = apiConfig.key;
+    }
+});
+
+// 為了讓遊戲進行中切換主題更穩定，請順手將上方的 toggleTheme() 替換為防呆版本：
+function toggleTheme() {
+    const body = document.body;
+    isLightMode = !isLightMode;
+    const btnText = isLightMode ? '🌙 深色模式' : '☀️ 淺色模式';
+    
+    if(isLightMode) body.classList.add('light-mode');
+    else body.classList.remove('light-mode');
+    
+    const btn1 = document.getElementById('theme-toggle-btn');
+    const btn2 = document.getElementById('theme-toggle-btn-2');
+    const btn3 = document.getElementById('theme-toggle-btn-3');
+    
+    if(btn1) btn1.innerText = btnText;
+    if(btn2) btn2.innerText = btnText;
+    if(btn3) btn3.innerText = btnText; 
+    
+    localStorage.setItem('aboTheme', isLightMode ? 'light' : 'dark');
+}
     createGalaxy();
     
     // 讀取主題偏好
