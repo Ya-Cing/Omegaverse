@@ -269,17 +269,17 @@
         /* 右下角懸浮縮圖 (預設隱藏，帶有彈跳放大動畫) */
         #fab-toggle-deck {
             position: absolute; 
-            bottom: 100px; /* 【修改】將位置大幅往上移動，避免被手機底部導覽列或邊緣擋住 */
+            bottom: 100px; 
             right: 30px; 
-            width: 70px; height: 70px; /* 微調放大按鈕，讓字體有呼吸空間 */
+            width: 70px; height: 70px; 
             border-radius: 50%; background: var(--surface-color); border: 2px solid var(--gold-accent);
             color: var(--gold-accent); box-shadow: 0 5px 20px rgba(0,0,0,0.6);
             z-index: 60; cursor: pointer; display: flex; flex-direction: column;
             align-items: center; justify-content: center; 
-            font-family: var(--font-main); /* 【確保】維持源雲明體 */
-            font-weight: 600; /* 【新增】加粗文字，使其與原先介面的樣式視覺重量一致 */
+            font-family: var(--font-main); 
+            font-weight: 600; 
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-size: 12px; /* 【新增】將字體放大到 12px */
+            font-size: 12px; 
             letter-spacing: 0.1em; transform: scale(0); 
         }
         #fab-toggle-deck:hover {
@@ -354,7 +354,7 @@
 </head>
 <body>
 
-<!-- 大廳環境音 (包含跨瀏覽器 MP3 與 OGG 備案) -->
+<!-- 大廳環境音 -->
 <audio id="lobby-bgm" loop preload="auto">
     <source src="周深 - 周 Outro.mp3" type="audio/mpeg">
     <source src="周深 - 周 Outro.ogg" type="audio/mpeg">
@@ -474,7 +474,7 @@
                 <div class="form-group">
                     <label>第二性別<span class="required-mark">(必填)</span></label>
                     <select id="c-gender2" onchange="handleGender2Change()">
-                        <option value="" disabled selected>請選擇...</option>
+                        <option value="" disabled selected>請选择...</option>
                         <option value="Alpha">Alpha</option>
                         <option value="Beta">Beta</option>
                         <option value="Omega">Omega</option>
@@ -535,7 +535,6 @@
                 <div class="loading-box"><div class="loading-text">世界演算中...</div></div>
             </div>
             <!-- 面板 -->
-            <!-- 新增：右下角懸浮縮圖按鈕 -->
             <button id="fab-toggle-deck" onclick="toggleActionDeck(false)" style="display: none;">
                 <span style="font-size: 22px; margin-bottom: 2px;">✒️</span>
                 <span>行動</span>
@@ -556,8 +555,7 @@
                     </div>
                 </div>
             </div>
-
-</div> <!-- 【修改】這裡是結束 game-view 的標籤，把它移到狀態欄上面 -->
+        </div>
 
         <!-- 狀態欄 (移到 game-view 外面，這樣切換分頁時才不會被跟著隱藏) -->
         <div id="status-view">
@@ -577,6 +575,7 @@ let characterProfile = "";
 let currentSaveName = "";
 let lastUserLogElement = null; 
 let currentGameTime = ""; // 【新增】用來精準追蹤並鎖死當前的遊戲時間
+let memoryReminderShown = false; 
     
 /* ================= 主題與音樂邏輯 ================= */
 let isLightMode = false;
@@ -591,10 +590,13 @@ function toggleTheme() {
     if(isLightMode) body.classList.add('light-mode');
     else body.classList.remove('light-mode');
     
-    document.getElementById('theme-toggle-btn').innerText = btnText;
-    document.getElementById('theme-toggle-btn-2').innerText = btnText;
-    // 【新增】同步更新世界運行區內的按鈕文字
-    document.getElementById('theme-toggle-btn-3').innerText = btnText; 
+    const btn1 = document.getElementById('theme-toggle-btn');
+    const btn2 = document.getElementById('theme-toggle-btn-2');
+    const btn3 = document.getElementById('theme-toggle-btn-3');
+    
+    if(btn1) btn1.innerText = btnText;
+    if(btn2) btn2.innerText = btnText;
+    if(btn3) btn3.innerText = btnText; 
     
     localStorage.setItem('aboTheme', isLightMode ? 'light' : 'dark');
 }
@@ -632,6 +634,7 @@ function changeVolume(val) {
     
 function createGalaxy() {
     const container = document.getElementById('galaxy-container');
+    if(!container) return; // 防呆
     for (let i = 0; i < 200; i++) {
         let star = document.createElement('div');
         star.className = 'star';
@@ -715,13 +718,6 @@ function toggleActionDeck(forceState = null) {
         }, 300);
     }
 }
-
-/* ================= 核心 AI 與存檔變數 ================= */
-let apiConfig = { type: 'gemini', key: '' };
-let chatHistory = [];
-let characterProfile = "";
-let currentSaveName = "";
-let lastUserLogElement = null; // 用於追蹤演算失敗時要移除的玩家對話
 
 /* ================= 系統提示詞設定 ================= */
 const SYSTEM_PROMPT = `
@@ -958,6 +954,14 @@ function submitChoice(choiceText) {
 【系統強制指令】必須依序輸出 <Status_Bar> -> <Cinematic_Novel> -> <Player_Choices> 三個 XML 區塊。`, false);
 }
 
+function submitCustomAction() {
+    const input = document.getElementById('custom-action-input');
+    const action = input.value.trim();
+    if (!action) return;
+    input.value = '';
+    submitChoice(action);
+}
+
 /* ================= 渲染邏輯 ================= */
 function appendLog(text, type) {
     const container = document.getElementById('story-inner-wrapper');
@@ -1192,7 +1196,7 @@ async function sendToAI(promptText, isInit = false) {
             reminderDiv.style.borderTop = '1px dashed var(--border-color)';
             reminderDiv.style.paddingTop = '20px';
             reminderDiv.style.marginTop = '40px';
-            reminderDiv.innerText = "✦ 世界意志提示：記憶軌跡已深，為避免忘卻舊有細節，建議點選左上角「📦 記憶精煉」精煉羈絆。 ✦";
+            reminderDiv.innerText = "✦ 世界意志提示：記憶軌跡已深，為避免忘卻舊有細節，建議點選左上角「📦 記憶打包」精煉羈絆。 ✦";
             
             container.appendChild(reminderDiv);
             const scrollArea = document.getElementById('story-container');
@@ -1221,8 +1225,8 @@ async function sendToAI(promptText, isInit = false) {
 
 /* ================= 記憶打包與新篇章系統 ================= */
 async function compressMemory() {
-    if (chatHistory.length < 8) return alert("記憶軌跡尚淺，尚未開啟記憶精煉功能");
-    if (!confirm("即將進行「記憶精煉」：系統會將至今的劇情濃縮為【前情提要】，並將當前狀態與時間點搬移至新篇章。確定執行？")) return;
+    if (chatHistory.length < 8) return alert("記憶軌跡尚淺，目前還不需要打包喔！");
+    if (!confirm("即將進行「記憶打包」：系統會將至今的劇情濃縮為【前情提要】，並將當前狀態與時間點搬移至新篇章。\n\n這將大幅提升 AI 的長期記憶力並解除卡頓。確定執行？")) return;
 
     document.getElementById('loading-modal').style.display = 'flex';
     const loadingText = document.querySelector('.loading-text');
@@ -1241,12 +1245,11 @@ async function compressMemory() {
         });
 
         // 2. 請 AI 寫摘要
-        const summaryPrompt = `請將以下累積的劇情摘要成約 800~1000 字的故事大綱（前情提要）。
+        const summaryPrompt = `請將以下累積的劇情摘要成約 500~800 字的故事大綱（前情提要）。
 必須包含：
 1. 雙方目前的關係階段與情感狀態（包含信息素的交融程度）。
 2. 發生過的關鍵事件與轉折。
 3. 角色目前的生理與心理狀態。
-4. 主要角色的人物設定。
 請用第三人稱客觀寫作，語氣要符合史詩小說的旁白，不要有任何 XML 標籤。
 
 【歷史劇情】：
@@ -1319,21 +1322,22 @@ ${fullStory.substring(fullStory.length - 15000)}`;
 
         // 7. 重新印出上一回合的結尾，此時 renderUIFromXML 會自動把狀態欄也完美畫上去！
         renderUIFromXML(lastAiText, true);
+        
         // 【新增】解除按鈕發光與重置提醒狀態
         memoryReminderShown = false;
         document.getElementById('btn-compress').classList.remove('btn-reminder');
         
-        alert("精煉完成！過往記憶與狀態已成功搬移至新篇章！");
+        alert("打包完成！過往記憶與狀態已成功搬移至新篇章！");
 
     } catch (error) {
         console.error(error);
-        alert("精煉失敗，請檢查網路或 API 額度。\n錯誤：" + error.message);
+        alert("打包失敗，請檢查網路或 API 額度。\n錯誤：" + error.message);
     } finally {
         document.getElementById('loading-modal').style.display = 'none';
         loadingText.innerText = origText;
     }
 }
-    
+
 /* ================= 初始化與事件綁定 ================= */
 document.addEventListener('DOMContentLoaded', () => {
     createGalaxy();
@@ -1359,7 +1363,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('api-key').value = apiConfig.key;
     }
 });
-    
 </script>
 </body>
 </html>
