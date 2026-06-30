@@ -196,6 +196,18 @@
         }
         .action-text-btn:hover { color: var(--gold-accent); }
         
+        /* 【新增】記憶打包提醒按鈕的發光動畫 */
+        @keyframes reminderPulse {
+            0% { color: var(--gold-accent); text-shadow: 0 0 5px var(--gold-accent); transform: scale(1); }
+            100% { color: #fff; text-shadow: 0 0 15px var(--gold-accent), 0 0 20px var(--accent-color); transform: scale(1.05); }
+        }
+        .btn-reminder {
+            animation: reminderPulse 1s infinite alternate !important;
+            font-weight: 600;
+            border: 1px solid var(--gold-accent) !important;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
         .nav-tab-btn {
             background: none; border: 1px solid var(--text-secondary); color: var(--text-secondary);
             padding: 6px 15px; border-radius: 4px; font-family: var(--font-main); font-size: 14px; cursor: pointer; transition: all 0.3s;
@@ -495,7 +507,8 @@
         <div class="nav-bar">
             <div class="nav-left">
                 <button class="action-text-btn" onclick="saveGameProgress()">💾 儲存記憶</button>
-                <!-- 新增：世界運行區的切換顏色模式按鈕 -->
+                <!-- 【新增】記憶打包按鈕 -->
+                <button class="action-text-btn" id="btn-compress" onclick="compressMemory()" title="將過去歷史打包成摘要，開啟新篇章">📦 記憶打包</button>
                 <button class="action-text-btn" onclick="toggleTheme()" id="theme-toggle-btn-3">☀️ 淺色模式</button>
             </div>
             <div class="nav-center">
@@ -557,6 +570,14 @@
 </div> <!-- 結束 app -->
 
 <script>
+/* ================= 核心 AI 與存檔變數 ================= */
+let apiConfig = { type: 'gemini', key: '' };
+let chatHistory = [];
+let characterProfile = "";
+let currentSaveName = "";
+let lastUserLogElement = null; 
+let currentGameTime = ""; // 【新增】用來精準追蹤並鎖死當前的遊戲時間
+    
 /* ================= 主題與音樂邏輯 ================= */
 let isLightMode = false;
 let isBgmPlaying = false;
@@ -707,23 +728,13 @@ const SYSTEM_PROMPT = `
 你是《費洛蒙共鳴：ABO Cinematic Engine》的DM，世界觀主宰者與頂級小說家。
 
 【敘事品質絕對要求】
-1. 回覆長度限制：每次劇情推進【絕對不可低於 1500 字】，極其詳細地擴寫每一個動作、眼神交會、心理拉扯。
+1. 回覆長度與推進：每次回覆約 600~1000 字，必須有「實質的劇情進展」，絕對不可重複上一段場景，必須極其詳細地擴寫每一個動作、眼神交會、心理拉扯。
 2. 沉浸與感官：必須充滿極致的感官描寫（氣味、呼吸、體溫）。
-3. 角色與多樣性：每一次登場的NPC人名請盡量不要重複，保持世界觀的多樣性與廣度。NPC不准無腦倒貼。
-4. 隱藏演算：「信息素匹配度」為DM開局暗自設定的隱藏數值，僅從劇情氛圍流露，絕對不可直接寫在狀態欄中。
+3. 角色與多樣性：每一次登場的NPC人名請盡量不要重複。NPC不准無腦倒貼。
+4. 隱藏演算：「信息素匹配度」為隱藏數值，僅從劇情氛圍流露。
 5. 禁止OOC及所有系統文字。
 
-【強制輸出格式】(你每一次的回覆都「必須」且「只能」包含以下三個 XML 標籤，絕對不准省略任何一個)：
-<Cinematic_Novel>
-(在這裡撰寫超過 1500 字的極致小說正文，嚴格遵守單一鏡頭換行法則)
-</Cinematic_Novel>
-
-<Player_Choices>
-<Option ID="A">具體選項A</Option>
-<Option ID="B">具體選項B</Option>
-<Option ID="C">具體選項C</Option>
-<Option ID="D">具體選項D (反向或克制行為)</Option>
-</Player_Choices>
+【強制輸出格式範例】(你每一次的回覆都「必須」且「只能」依序包含以下三個 XML 標籤，不准省略)：
 
 <Status_Bar>
 頁碼： P.[數字]
@@ -737,6 +748,17 @@ const SYSTEM_PROMPT = `
 關係流轉： [簡述羈絆]
 他的心聲： [20字內，展露真實波瀾]
 </Status_Bar>
+
+<Cinematic_Novel>
+(在這裡撰寫 800~1000 字的全新劇情，推進時間與事件，絕不重複上一段)
+</Cinematic_Novel>
+
+<Player_Choices>
+<Option>具體選項A (根據當下情境給出)</Option>
+<Option>具體選項B (根據當下情境給出)</Option>
+<Option>具體選項C (根據當下情境給出)</Option>
+<Option>具體選項D (反向或克制行為)</Option>
+</Player_Choices>
 `;
     
 /* ================= 存檔系統 ================= */
@@ -812,6 +834,14 @@ function loadGame(id) {
     // ==========================================
 
     closeLoadModal();
+
+    // ==========================================
+    // 【新增】重置記憶提醒狀態（讀取存檔時解除發光）
+    memoryReminderShown = false;
+    const btnCompress = document.getElementById('btn-compress');
+    if (btnCompress) btnCompress.classList.remove('btn-reminder');
+    // ==========================================
+
     switchScreen('game-screen');
     
     document.getElementById('story-inner-wrapper').innerHTML = '';
@@ -893,11 +923,20 @@ function initializeGame() {
 性格：${personality}
 特殊背景：${bg}
 
-請根據此角色卡，創造一個極具張力、充滿感官細節的長篇開局場景，並嚴格輸出 XML。字數絕對不得低於 1500 字。並且「必須」輸出 <Cinematic_Novel>, <Player_Choices> 與 <Status_Bar> 三個完整的 XML 區塊，絕不可遺漏任何一個。`;
-    
+請根據此角色卡，創造一個極具張力、充滿感官細節的開局場景。
+【系統強制指令】必須依序輸出 <Status_Bar> -> <Cinematic_Novel> -> <Player_Choices> 三個完整的 XML 區塊，絕不可遺漏。`;
+
     currentSaveName = "";
     document.getElementById('story-inner-wrapper').innerHTML = '';
     document.getElementById('status-card-wrapper').innerHTML = '';
+
+    // ==========================================
+    // 【新增】重置記憶提醒狀態（創立新世界時解除發光）
+    memoryReminderShown = false;
+    const btnCompress = document.getElementById('btn-compress');
+    if (btnCompress) btnCompress.classList.remove('btn-reminder');
+    // ==========================================
+
     switchScreen('game-screen');
     sendToAI(characterProfile, true);
 }
@@ -910,16 +949,13 @@ function submitChoice(choiceText) {
     document.getElementById('action-deck').style.display = 'none';
     document.getElementById('fab-toggle-deck').style.display = 'none';
     
-    // 【修改】在玩家動作後方補上強硬的格式要求
-    sendToAI(`玩家選擇了：${choiceText}。請推演下一步，維持極致感官描寫與 1500 字以上的長度，並且「必須」輸出 <Cinematic_Novel>, <Player_Choices> 與 <Status_Bar> 三個 XML 區塊。`, false);
-}
+    // 【新增】時間鎖死警告，強制 AI 計算劇情經過了幾分鐘或幾小時
+    let timePrompt = currentGameTime ? `\n(※系統時間錨點：當前劇情時間為 ${currentGameTime}。請嚴格依據玩家行動的合理耗時來推進時間，並同步更新至狀態欄。)` : "";
 
-function submitCustomAction() {
-    const input = document.getElementById('custom-action-input');
-    const action = input.value.trim();
-    if (!action) return;
-    input.value = '';
-    submitChoice(action);
+    // 【修改】在玩家動作後方補上強硬的格式與時間要求
+    sendToAI(`【玩家行動】${choiceText}
+請根據上述行動立刻推進全新的劇情，絕對不要重複剛才的場景。${timePrompt}
+【系統強制指令】必須依序輸出 <Status_Bar> -> <Cinematic_Novel> -> <Player_Choices> 三個 XML 區塊。`, false);
 }
 
 /* ================= 渲染邏輯 ================= */
@@ -948,18 +984,24 @@ function appendLog(text, type) {
 }
 
 function renderUIFromXML(xmlString, renderOptions = true) {
-    const novelMatch = xmlString.match(/<Cinematic_Novel>([\s\S]*?)<\/Cinematic_Novel>/i);
-    // 【修改】終極防呆正則：容忍 AI 忘記打底線 (<StatusBar>)、或輸出被字數上限截斷而缺少結尾標籤
+    // 容忍各種大小寫、有無底線的標籤，甚至被截斷的狀況
+    const novelMatch = xmlString.match(/<Cinematic_Novel[^>]*>([\s\S]*?)(?:<\/Cinematic_Novel>|$)/i);
     const statusMatch = xmlString.match(/<Status_?Bar[^>]*>([\s\S]*?)(?:<\/Status_?Bar>|$)/i);
     
-    if (novelMatch) appendLog(novelMatch[1].trim(), 'ai');
+    // 如果 AI 完全忘記寫標籤，就把整段文字印出來，避免畫面空白卡死
+    if (novelMatch) {
+        appendLog(novelMatch[1].trim(), 'ai');
+    } else {
+        let cleanText = xmlString.replace(/<[^>]+>/g, '').trim();
+        if(cleanText) appendLog("【世界意志】：\n" + cleanText, 'ai');
+    }
 
     if (statusMatch) {
         const statusBarData = statusMatch[1].trim().split('\n').filter(l => l.trim() !== '');
         let statusHtml = `<h3>世界動態更新</h3>`;
         
         statusBarData.forEach(line => {
-            // 【強化解析】自動過濾 AI 雞婆加上的 Markdown 星號 (**)、清單符號 (-) 與多餘空白
+            // 自動過濾 AI 雞婆加上的 Markdown 星號 (**)、清單符號 (-) 與多餘空白
             let cleanLine = line.replace(/[\*\-#`]/g, '').trim(); 
             // 支援全形(：)與半形(:)冒號
             const match = cleanLine.match(/^([^:：]+)[:：](.*)$/);
@@ -967,6 +1009,12 @@ function renderUIFromXML(xmlString, renderOptions = true) {
             if(match) {
                 let label = match[1].trim();
                 let content = match[2].trim();
+                
+                // 【新增】動態捕捉當前時間，做為下回合的時間錨點
+                if (label.includes('時間') || label.includes('时间')) {
+                    currentGameTime = content;
+                }
+
                 // 只要標籤包含「心聲」兩個字就套用特殊樣式
                 if (label.includes('心聲')) {
                     statusHtml += `<div class="status-heart">「${content}」</div>`;
@@ -983,29 +1031,41 @@ function renderUIFromXML(xmlString, renderOptions = true) {
         const newCard = document.createElement('div');
         newCard.className = 'status-card';
         newCard.innerHTML = statusHtml;
-        
-        // 使用 prepend 確保「最新狀態」會堆疊在最上面，歷史狀態會往下推
         document.getElementById('status-card-wrapper').prepend(newCard);
     }
 
     if(renderOptions) {
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
-        const optionRegex = /<Option\s+ID=["']?([A-D])["']?>([\s\S]*?)<\/Option>/gi;
+        
+        // 【究極選項防呆】無論 AI 寫 <Option> 還是 <Option ID="A">，全部強制抓出來
+        const optionRegex = /<Option[^>]*>([\s\S]*?)<\/Option>/gi;
         let match; let hasOptions = false;
+        let optIndex = 0;
+        const labels = ['A', 'B', 'C', 'D', 'E']; // 自動補上 ABCD
+        
         while ((match = optionRegex.exec(xmlString)) !== null) {
             hasOptions = true;
             const btn = document.createElement('button'); btn.className = 'choice-btn';
-            btn.innerText = `${match[1]}. ${match[2].trim()}`;
-            btn.onclick = () => submitChoice(btn.innerText);
+            
+            // 如果 AI 雞婆自己寫了「A.」，把它濾掉，統一由程式加上
+            let rawText = match[1].replace(/^[A-Da-d][\.、：:]\s*/, '').trim();
+            let label = labels[optIndex] || '*';
+            
+            btn.innerText = `${label}. ${rawText}`;
+            btn.onclick = () => submitChoice(rawText);
             optionsContainer.appendChild(btn);
+            optIndex++;
         }
+        
+        // 如果 AI 真的沒給選項，給一個不會卡死的備用按鈕
         if (!hasOptions) {
             const btn = document.createElement('button'); btn.className = 'choice-btn';
-            btn.innerText = `繼續推進...`; btn.onclick = () => submitChoice("繼續觀察並推進");
+            btn.innerText = `環顧四周，尋找新的出路...`; 
+            btn.onclick = () => submitChoice("環顧四周，尋找新的出路");
             optionsContainer.appendChild(btn);
         }
-        if (isDeckCollapsed) toggleActionDeck(false);;
+        if (isDeckCollapsed) toggleActionDeck(false);
     }
 }
 
@@ -1018,16 +1078,68 @@ async function sendToAI(promptText, isInit = false) {
 
     try {
         let responseText = "";
+        
+        // ==========================================
+        // 1. 本地端紀錄 (玩家讀檔時看到的完整歷史)
+        // ==========================================
         if (apiConfig.type === 'openai') {
             if (isInit) {
                 chatHistory = [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: promptText }];
             } else {
                 chatHistory.push({ role: "user", content: promptText });
             }
+        } else if (apiConfig.type === 'gemini') {
+            if (isInit) { 
+                chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; 
+            } else { 
+                chatHistory.push({ role: "user", parts: [{ text: promptText }] }); 
+            }
+        }
+
+        // ==========================================
+        // 2. 記憶滑動視窗 (送給 AI 演算的「優化版」紀錄)
+        // 解決 20 頁後 AI 失憶與劇情無限重複的問題
+        // ==========================================
+        let payloadHistory = [];
+        const MAX_RECENT_MSGS = 6; // 限制只帶入最近的 6 句話 (約 3 個回合)，保持 AI 思緒清晰
+
+        if (apiConfig.type === 'openai') {
+            payloadHistory.push(chatHistory[0]); // 絕對保留：系統設定 (System)
+            payloadHistory.push(chatHistory[1]); // 絕對保留：角色設定檔 (User)
+            
+            if (chatHistory.length > MAX_RECENT_MSGS + 2) {
+                // 拼接最新的 3 回合對話
+                payloadHistory = payloadHistory.concat(chatHistory.slice(-MAX_RECENT_MSGS));
+            } else {
+                payloadHistory = [...chatHistory]; 
+            }
+        } else if (apiConfig.type === 'gemini') {
+            payloadHistory.push(chatHistory[0]); // 絕對保留：角色設定檔 (User)
+            if (chatHistory.length > 1) {
+                payloadHistory.push(chatHistory[1]); // 絕對保留：開局第一段劇情 (Model)，用來定調文風
+            }
+            
+            if (chatHistory.length > MAX_RECENT_MSGS + 2) {
+                let recent = chatHistory.slice(-MAX_RECENT_MSGS);
+                // Gemini 強制要求 User 和 Model 交替，確保切出來的陣列第一筆是 user
+                if (recent[0].role === 'model') {
+                    recent.shift(); 
+                }
+                payloadHistory = payloadHistory.concat(recent);
+            } else {
+                payloadHistory = [...chatHistory];
+            }
+        }
+
+        // ==========================================
+        // 3. API 發送區塊 (使用 payloadHistory 進行輕量化演算)
+        // ==========================================
+        if (apiConfig.type === 'openai') {
             const res = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiConfig.key}` },
-                body: JSON.stringify({ model: 'gpt-4o', messages: chatHistory, temperature: 0.7 })
+                // 這裡改送 payloadHistory
+                body: JSON.stringify({ model: 'gpt-4o', messages: payloadHistory, temperature: 0.75 })
             });
             const data = await res.json();
             if(data.error) throw new Error(data.error.message);
@@ -1035,17 +1147,15 @@ async function sendToAI(promptText, isInit = false) {
             chatHistory.push({ role: "assistant", content: responseText });
 
         } else if (apiConfig.type === 'gemini') {
-            if (isInit) { chatHistory = [{ role: "user", parts: [{ text: characterProfile }] }]; } 
-            else { chatHistory.push({ role: "user", parts: [{ text: promptText }] }); }
-
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-                    contents: chatHistory,
-                    generationConfig: { temperature: 0.7 }
+                    // 這裡改送 payloadHistory
+                    contents: payloadHistory, 
+                    generationConfig: { temperature: 0.75 } // 稍微調高一點溫度，讓劇情更有轉折
                 })
             });
             const data = await res.json();
@@ -1054,34 +1164,176 @@ async function sendToAI(promptText, isInit = false) {
             chatHistory.push({ role: "model", parts: [{ text: responseText }] });
         }
 
-        responseText = responseText.replace(/```xml\n?/g, '').replace(/```\n?/g, '').trim();
+        // 徹底清除各種格式的 Markdown 程式碼區塊標記
+        responseText = responseText.replace(/```[a-zA-Z]*\n?/g, '').replace(/```\n?/g, '').trim();
+        
         document.getElementById('loading-modal').style.display = 'none';
         document.getElementById('action-deck').style.display = 'flex';
         renderUIFromXML(responseText, true);
 
+        // ==========================================
+        // 【新增】檢查並觸發「記憶精煉」提醒
+        // 當對話紀錄超過 18 筆 (約 5~6 個完整回合)，且尚未提醒過時觸發
+        // ==========================================
+        if (chatHistory.length > 18 && !memoryReminderShown) {
+            memoryReminderShown = true; // 標記已提醒，避免重複洗版
+            
+            // 讓左上角按鈕發光
+            const compressBtn = document.getElementById('btn-compress');
+            if (compressBtn) compressBtn.classList.add('btn-reminder');
+
+            // 在畫面底部生成優美的系統提示字
+            const container = document.getElementById('story-inner-wrapper');
+            const reminderDiv = document.createElement('div');
+            reminderDiv.className = 'story-paragraph';
+            reminderDiv.style.color = 'var(--gold-accent)';
+            reminderDiv.style.textAlign = 'center';
+            reminderDiv.style.fontSize = '14px';
+            reminderDiv.style.borderTop = '1px dashed var(--border-color)';
+            reminderDiv.style.paddingTop = '20px';
+            reminderDiv.style.marginTop = '40px';
+            reminderDiv.innerText = "✦ 世界意志提示：記憶軌跡已深，為避免忘卻舊有細節，建議點選左上角「📦 記憶精煉」精煉羈絆。 ✦";
+            
+            container.appendChild(reminderDiv);
+            const scrollArea = document.getElementById('story-container');
+            setTimeout(() => { scrollArea.scrollTop = scrollArea.scrollHeight; }, 150);
+        }
+        
     } catch (error) {
         // === 演算失敗的防呆與回溯機制 ===
         document.getElementById('loading-modal').style.display = 'none';
         
-        // 1. 移除畫面上剛剛產生的玩家點擊紀錄
         if (lastUserLogElement) {
             lastUserLogElement.remove();
             lastUserLogElement = null;
         }
         
-        // 2. 將未成功發送的 prompt 從紀錄中剔除，避免污染下一次的對話
         if (!isInit && chatHistory.length > originalHistoryLength) {
             chatHistory.pop();
         }
         
-        // 3. 恢復操作面板的顯示狀態並展開，讓玩家能重試
         document.getElementById('action-deck').style.display = 'flex';
-        toggleActionDeck(false); // 強制展開
+        toggleActionDeck(false); 
         
         alert("API 演算失敗，已恢復上一步操作，請檢查網路或 API 額度。\n錯誤：" + error.message);
     }
 }
 
+/* ================= 記憶打包與新篇章系統 ================= */
+async function compressMemory() {
+    if (chatHistory.length < 8) return alert("記憶軌跡尚淺，尚未開啟記憶精煉功能");
+    if (!confirm("即將進行「記憶精煉」：系統會將至今的劇情濃縮為【前情提要】，並將當前狀態與時間點搬移至新篇章。確定執行？")) return;
+
+    document.getElementById('loading-modal').style.display = 'flex';
+    const loadingText = document.querySelector('.loading-text');
+    const origText = loadingText.innerText;
+    loadingText.innerText = "世界線收束中... 正在提煉長期記憶...";
+
+    try {
+        // 1. 抓取所有 AI 劇情
+        let fullStory = "";
+        chatHistory.forEach(msg => {
+            let text = msg.content || (msg.parts && msg.parts[0].text);
+            if (text && (msg.role === 'assistant' || msg.role === 'model')) {
+                const novelMatch = text.match(/<Cinematic_Novel[^>]*>([\s\S]*?)(?:<\/Cinematic_Novel>|$)/i);
+                if (novelMatch) fullStory += novelMatch[1].trim() + "\n\n";
+            }
+        });
+
+        // 2. 請 AI 寫摘要
+        const summaryPrompt = `請將以下累積的劇情摘要成約 800~1000 字的故事大綱（前情提要）。
+必須包含：
+1. 雙方目前的關係階段與情感狀態（包含信息素的交融程度）。
+2. 發生過的關鍵事件與轉折。
+3. 角色目前的生理與心理狀態。
+4. 主要角色的人物設定。
+請用第三人稱客觀寫作，語氣要符合史詩小說的旁白，不要有任何 XML 標籤。
+
+【歷史劇情】：
+${fullStory.substring(fullStory.length - 15000)}`; 
+
+        let summaryText = "";
+        if (apiConfig.type === 'openai') {
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiConfig.key}` },
+                body: JSON.stringify({ model: 'gpt-4o', messages: [{role: "user", content: summaryPrompt}], temperature: 0.4 })
+            });
+            const data = await res.json();
+            if(data.error) throw new Error(data.error.message);
+            summaryText = data.choices[0].message.content;
+        } else if (apiConfig.type === 'gemini') {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiConfig.key}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{role: "user", parts: [{text: summaryPrompt}]}], generationConfig: {temperature: 0.4} })
+            });
+            const data = await res.json();
+            if(data.error) throw new Error(data.error.message);
+            summaryText = data.candidates[0].content.parts[0].text;
+        }
+
+        // 4. 抓取最後一次的 AI 回應
+        const lastAiMsgObj = chatHistory[chatHistory.length - 1]; 
+        let lastAiText = lastAiMsgObj.content || (lastAiMsgObj.parts && lastAiMsgObj.parts[0].text);
+
+        // 【新增】精準擷取最後的狀態列數值 XML，並塞入背景設定中
+        const statusMatch = lastAiText.match(/<Status_?Bar[^>]*>([\s\S]*?)(?:<\/Status_?Bar>|$)/i);
+        let lastStatusBarXML = statusMatch ? `<Status_Bar>\n${statusMatch[1].trim()}\n</Status_Bar>` : "";
+
+        // 3. 更新角色設定檔 (運用 split 分離舊的摘要，確保不會無限疊加)
+        characterProfile = characterProfile.split('\n\n【世界線收束：前情提要】')[0];
+        characterProfile += `\n\n【世界線收束：前情提要】\n${summaryText}\n\n【收束斷點：當前狀態與時間】\n(※ 請DM嚴格接續以下時間點與各項數值，作為下一段劇情的起點)\n${lastStatusBarXML}`;
+
+        // 5. 徹底重置陣列，釋放記憶體
+        if (apiConfig.type === 'openai') {
+            chatHistory = [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: characterProfile },
+                { role: "assistant", content: lastAiText }
+            ];
+        } else {
+            chatHistory = [
+                { role: "user", parts: [{ text: characterProfile }] },
+                { role: "model", parts: [{ text: lastAiText }] }
+            ];
+        }
+
+        // 6. 清空畫面，印出精美的新篇章宣告
+        const container = document.getElementById('story-inner-wrapper');
+        container.innerHTML = ''; 
+        // 【新增】連同狀態欄的舊歷史一起清空，準備迎接搬移過去的最新狀態
+        document.getElementById('status-card-wrapper').innerHTML = ''; 
+
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'story-paragraph';
+        summaryDiv.style.color = 'var(--gold-accent)';
+        summaryDiv.style.border = '1px solid var(--gold-accent)';
+        summaryDiv.style.padding = '30px';
+        summaryDiv.style.borderRadius = '4px';
+        summaryDiv.style.backgroundColor = 'rgba(194, 163, 112, 0.05)';
+        summaryDiv.style.marginTop = '20px';
+        summaryDiv.innerHTML = `<h3 style="text-align:center; margin-bottom:20px; font-weight:600; letter-spacing:0.2em;">✦ 世界線收束 ‧ 記憶封存 ✦</h3><div style="font-size: 16px; line-height: 2.0;">${summaryText.replace(/\n/g, '<br>')}</div>`;
+        container.appendChild(summaryDiv);
+
+        // 7. 重新印出上一回合的結尾，此時 renderUIFromXML 會自動把狀態欄也完美畫上去！
+        renderUIFromXML(lastAiText, true);
+        // 【新增】解除按鈕發光與重置提醒狀態
+        memoryReminderShown = false;
+        document.getElementById('btn-compress').classList.remove('btn-reminder');
+        
+        alert("精煉完成！過往記憶與狀態已成功搬移至新篇章！");
+
+    } catch (error) {
+        console.error(error);
+        alert("精煉失敗，請檢查網路或 API 額度。\n錯誤：" + error.message);
+    } finally {
+        document.getElementById('loading-modal').style.display = 'none';
+        loadingText.innerText = origText;
+    }
+}
+    
 window.onload = () => {
     createGalaxy();
     
