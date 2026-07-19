@@ -1,4 +1,3 @@
-```markdown
 # 🌌 費洛蒙共鳴｜Pheromone Resonance: ABO Cinematic Engine
 
 > **「本能撕裂理智，靈魂與費洛蒙在星空中徹底共鳴。」**
