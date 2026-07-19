@@ -1,15 +1,7 @@
-這是一份為您的 GitHub Repository（儲存庫）量身打造的 `README.md` 介紹檔案。它融合了精緻的排版與視覺設計，能讓來到您 GitHub 頁面的玩家一眼就感受到這款遊戲的史詩感與高質感。
-
-您可以直接點擊右上角的複製，並在 GitHub 建立一個名為 `README.md` 的檔案貼上。
-
 ---
 
 ```markdown
 # 🌌 費洛蒙共鳴｜Pheromone Resonance: ABO Cinematic Engine
-
-[![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-8a0303?style=for-the-badge&logo=github)](https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPO-NAME/)
-[![AI-Powered](https://img.shields.io/badge/AI%20Engine-Gemini%20%2F%20GPT--4o-c2a370?style=for-the-badge&logo=google-gemini)](https://github.com)
-[![Platform](https://img.shields.io/badge/Platform-PC%20%2F%20Desktop%20Full%20Screen-0a0a0c?style=for-the-badge)](https://github.com)
 
 > **「本能撕裂理智，靈魂與費洛蒙在星空中徹底共鳴。」**
 > 本遊戲是一款基於 **Omegaverse (ABO) 世界觀** 的全螢幕沉浸式、長篇連續型文字角色扮演遊戲 (Text-RPG)。專為電腦端滿版體驗打造，結合純淨的小說白描與動態數值演算，帶您進入最細膩的情感拉扯與本能碰撞。
